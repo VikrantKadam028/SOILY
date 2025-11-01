@@ -1,0 +1,1076 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SOILY - Farmer Registration</title>
+    <link rel="icon" type="image/x-icon" href="/logo2.png" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Audiowide&family=Inconsolata:wght@200..900&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Righteous&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      /* Soily Registration Form - Complete & Self-Contained */
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: poppins;
+        /* background: linear-gradient(135deg, #25995c 0%, #007236 100%); */
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        line-height: 1.5;
+        position: relative;
+      }
+
+      body::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: url('data:image/svg+xml,<svg width="100" height="100" xmlns="http://www.w3.org/2000/svg"><path d="M10 10h80v80H10z" fill="none" stroke="rgba(255,255,255,0.03)" stroke-width="2"/></svg>');
+        opacity: 0.3;
+      }
+
+      .register-container {
+        width: 100%;
+        max-width: 480px;
+        position: relative;
+        z-index: 1;
+      }
+
+      .register-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 48px 40px;
+        /* box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3); */
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        position: relative;
+      }
+
+      .register-header {
+        text-align: center;
+        margin-bottom: 36px;
+      }
+
+      .logo {
+        margin-bottom: 18px;
+        display: flex;
+        justify-content: center;
+        margin: 0 auto;
+      }
+      .logo img {
+        width: auto;
+        height: 60px;
+        margin-bottom: 20px;
+      }
+
+      .register-header h1 {
+        color: #1a1f36;
+        font-size: 1.75rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+        letter-spacing: -0.02em;
+      }
+
+      .register-header p {
+        color: #6b7385;
+        font-size: 14px;
+        font-weight: 400;
+      }
+
+      /* Input Groups with Floating Labels */
+      .input-group {
+        position: relative;
+        margin-bottom: 24px;
+      }
+
+      .input-group input,
+      .input-group select {
+        width: 100%;
+        background: #ffffff;
+        border: 1.5px solid #e3e8ee;
+        border-radius: 8px;
+        padding: 16px 14px 8px 14px;
+        color: #1a1f36;
+        font-size: 16px;
+        font-weight: 400;
+        outline: none;
+        transition: all 0.2s ease;
+        font-family: inherit;
+      }
+
+      .input-group select {
+        padding: 14px 14px;
+        cursor: pointer;
+      }
+
+      .input-group input:focus,
+      .input-group select:focus {
+        border-color: #25995c;
+        box-shadow: 0 0 0 3px rgba(37, 153, 92, 0.1);
+      }
+
+      .input-group input::placeholder {
+        color: transparent;
+      }
+
+      .input-group label {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #8792a2;
+        font-size: 16px;
+        font-weight: 400;
+        pointer-events: none;
+        transition: all 0.2s ease;
+        background: #ffffff;
+        padding: 0 4px;
+      }
+
+      .input-group.select-group label {
+        top: -10px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #25995c;
+        transform: translateY(0);
+      }
+
+      .input-group input:focus + label,
+      .input-group input:not(:placeholder-shown) + label {
+        top: -10px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #25995c;
+        transform: translateY(0);
+      }
+
+      .input-group input:not(:focus):not(:placeholder-shown) + label {
+        color: #6b7385;
+      }
+
+      /* Password Toggle */
+      .input-group:has(.password-toggle) input {
+        padding-right: 42px;
+      }
+
+      .password-toggle {
+        position: absolute;
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        background: none;
+        border: none;
+        cursor: pointer;
+        color: #8792a2;
+        padding: 6px;
+        border-radius: 4px;
+        transition: color 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+
+      .password-toggle:hover {
+        color: #25995c;
+      }
+
+      /* Language Selection */
+      .language-section {
+        margin-bottom: 28px;
+        padding: 20px;
+        background: #f8fdf9;
+        border-radius: 8px;
+        border: 1.5px solid #e3f5e8;
+      }
+
+      .language-section h3 {
+        color: #1a1f36;
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 12px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .language-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+      }
+
+      .language-option {
+        display: none;
+      }
+
+      .language-label {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        padding: 12px 8px;
+        background: #ffffff;
+        border: 1.5px solid #e3e8ee;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 13px;
+        font-weight: 500;
+        color: #6b7385;
+        text-align: center;
+      }
+
+      .language-option:checked + .language-label {
+        background: #25995c;
+        border-color: #25995c;
+        color: #ffffff;
+        transform: scale(1.05);
+        box-shadow: 0 4px 12px rgba(37, 153, 92, 0.3);
+      }
+
+      .language-label:hover:not(:has(input:checked)) {
+        border-color: #25995c;
+        background: #f8fdf9;
+      }
+
+      .language-emoji {
+        font-size: 20px;
+        margin-bottom: 4px;
+      }
+
+      /* Terms Checkbox */
+      .terms-container {
+        display: flex;
+        align-items: flex-start;
+        margin-bottom: 28px;
+        font-size: 13px;
+        color: #6b7385;
+        gap: 10px;
+      }
+
+      .terms-container input[type="checkbox"] {
+        display: none;
+      }
+
+      .checkmark {
+        width: 20px;
+        height: 20px;
+        border: 1.5px solid #d1d9e0;
+        border-radius: 4px;
+        flex-shrink: 0;
+        position: relative;
+        transition: all 0.2s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: transparent;
+        cursor: pointer;
+      }
+
+      .terms-container input[type="checkbox"]:checked + .checkmark {
+        background: #25995c;
+        border-color: #25995c;
+        color: white;
+      }
+
+      .terms-text a {
+        color: #25995c;
+        text-decoration: none;
+        font-weight: 500;
+      }
+
+      .terms-text a:hover {
+        text-decoration: underline;
+      }
+
+      /* Submit Button */
+      .submit-btn {
+        width: 100%;
+        background: linear-gradient(135deg, #25995c 0%, #1d7a48 100%);
+        color: #ffffff;
+        border: none;
+        border-radius: 8px;
+        padding: 16px 20px;
+        cursor: pointer;
+        font-family: inherit;
+        font-size: 16px;
+        font-weight: 600;
+        position: relative;
+        margin-bottom: 24px;
+        transition: all 0.3s ease;
+        overflow: hidden;
+        min-height: 52px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        box-shadow: 0 4px 12px rgba(37, 153, 92, 0.3);
+      }
+
+      .submit-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 8px 20px rgba(37, 153, 92, 0.4);
+      }
+
+      .submit-btn:active {
+        transform: translateY(0);
+      }
+
+      .submit-btn:disabled {
+        background: #a2a7b5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: none;
+      }
+
+      .btn-text {
+        transition: opacity 0.2s ease;
+      }
+
+      .btn-loader {
+        position: absolute;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        color: #ffffff;
+      }
+
+      .submit-btn.loading .btn-text {
+        opacity: 0;
+      }
+
+      .submit-btn.loading .btn-loader {
+        opacity: 1;
+      }
+
+      /* Login Link */
+      .login-link {
+        text-align: center;
+        font-size: 14px;
+        color: #6b7385;
+      }
+
+      .login-link a {
+        color: #25995c;
+        text-decoration: none;
+        font-weight: 600;
+        transition: color 0.2s ease;
+      }
+
+      .login-link a:hover {
+        color: #007236;
+        text-decoration: underline;
+      }
+
+      /* Error States */
+      .error-message {
+        color: #ef4444;
+        font-size: 12px;
+        font-weight: 500;
+        margin-top: 6px;
+        opacity: 0;
+        transform: translateY(-4px);
+        transition: all 0.2s ease;
+      }
+
+      .error-message.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .input-group.error input,
+      .input-group.error select {
+        border-color: #ef4444;
+        background: #fef2f2;
+      }
+
+      .input-group.error input:focus,
+      .input-group.error select:focus {
+        border-color: #ef4444;
+        box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+      }
+
+      .input-group.error label {
+        color: #ef4444;
+      }
+
+      /* Success Message */
+      .success-message {
+        display: none;
+        text-align: center;
+        padding: 32px 20px;
+        opacity: 0;
+        transform: translateY(16px);
+        transition: all 0.3s ease;
+      }
+
+      .success-message.show {
+        display: block;
+        opacity: 1;
+        transform: translateY(0);
+      }
+
+      .success-icon {
+        margin: 0 auto 20px;
+        animation: successPop 0.5s ease-out;
+      }
+
+      @keyframes successPop {
+        0% {
+          transform: scale(0);
+        }
+        50% {
+          transform: scale(1.1);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
+      .success-message h3 {
+        color: #1a1f36;
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 8px;
+      }
+
+      .success-message p {
+        color: #6b7385;
+        font-size: 14px;
+      }
+
+      /* Mobile Responsive */
+      @media (max-width: 480px) {
+        body {
+          padding: 20px 16px;
+        }
+
+        .register-card {
+          padding: 36px 24px;
+          border-radius: 12px;
+        }
+
+        .register-header h1 {
+          font-size: 1.5rem;
+        }
+
+        .language-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+
+        .language-label {
+          padding: 10px 6px;
+          font-size: 12px;
+        }
+
+        .language-emoji {
+          font-size: 18px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="register-container">
+      <div class="register-card">
+        <div class="register-header">
+          <div class="logo">
+            <img src="/logo1.png" alt="" />
+          </div>
+          <!-- <h1>Join Soily</h1> -->
+          <p>Create your farmer account to get started</p>
+        </div>
+
+        <form class="register-form" id="registerForm" novalidate>
+          <div class="input-group">
+            <input
+              type="text"
+              id="fullName"
+              name="fullName"
+              required
+              autocomplete="name"
+              placeholder=" "
+            />
+            <label for="fullName">Full Name</label>
+            <span class="error-message" id="fullNameError"></span>
+          </div>
+
+          <div class="input-group">
+            <input
+              type="email"
+              id="email"
+              name="email"
+              required
+              autocomplete="email"
+              placeholder=" "
+            />
+            <label for="email">Email Address</label>
+            <span class="error-message" id="emailError"></span>
+          </div>
+
+          <div class="input-group">
+            <input
+              type="tel"
+              id="phone"
+              name="phone"
+              required
+              autocomplete="tel"
+              placeholder=" "
+            />
+            <label for="phone">Phone Number</label>
+            <span class="error-message" id="phoneError"></span>
+          </div>
+
+          <div class="input-group">
+            <input
+              type="text"
+              id="location"
+              name="location"
+              required
+              placeholder=" "
+            />
+            <label for="location">Farm Location (City/District)</label>
+            <span class="error-message" id="locationError"></span>
+          </div>
+
+          <div class="input-group select-group">
+            <label for="farmSize">Farm Size</label>
+            <select id="farmSize" name="farmSize" required>
+              <option value="">Select farm size</option>
+              <option value="small">Small (Less than 2 acres)</option>
+              <option value="medium">Medium (2-10 acres)</option>
+              <option value="large">Large (10-50 acres)</option>
+              <option value="xlarge">Very Large (More than 50 acres)</option>
+            </select>
+            <span class="error-message" id="farmSizeError"></span>
+          </div>
+
+          <div class="input-group">
+            <input
+              type="password"
+              id="password"
+              name="password"
+              required
+              autocomplete="new-password"
+              placeholder=" "
+            />
+            <label for="password">Password</label>
+            <button
+              type="button"
+              class="password-toggle"
+              id="passwordToggle"
+              aria-label="Toggle password visibility"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M8 3C4.5 3 1.6 5.6 1 8c.6 2.4 3.5 5 7 5s6.4-2.6 7-5c-.6-2.4-3.5-5-7-5zm0 8.5A3.5 3.5 0 118 4.5a3.5 3.5 0 010 7zm0-5.5a2 2 0 100 4 2 2 0 000-4z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+            <span class="error-message" id="passwordError"></span>
+          </div>
+
+          <div class="input-group">
+            <input
+              type="password"
+              id="confirmPassword"
+              name="confirmPassword"
+              required
+              autocomplete="new-password"
+              placeholder=" "
+            />
+            <label for="confirmPassword">Confirm Password</label>
+            <button
+              type="button"
+              class="password-toggle"
+              id="confirmPasswordToggle"
+              aria-label="Toggle password visibility"
+            >
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <path
+                  d="M8 3C4.5 3 1.6 5.6 1 8c.6 2.4 3.5 5 7 5s6.4-2.6 7-5c-.6-2.4-3.5-5-7-5zm0 8.5A3.5 3.5 0 118 4.5a3.5 3.5 0 010 7zm0-5.5a2 2 0 100 4 2 2 0 000-4z"
+                  fill="currentColor"
+                />
+              </svg>
+            </button>
+            <span class="error-message" id="confirmPasswordError"></span>
+          </div>
+
+          <div class="language-section">
+            <h3>
+              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+                <circle
+                  cx="8"
+                  cy="8"
+                  r="7"
+                  stroke="#25995C"
+                  stroke-width="1.5"
+                />
+                <path
+                  d="M8 1v14M1 8h14M3 4.5c2 2.5 8 2.5 10 0M3 11.5c2-2.5 8-2.5 10 0"
+                  stroke="#25995C"
+                  stroke-width="1.5"
+                />
+              </svg>
+              Preferred Language
+            </h3>
+            <div class="language-grid">
+              <label>
+                <input
+                  type="radio"
+                  name="language"
+                  value="en"
+                  class="language-option"
+                  checked
+                />
+                <span class="language-label">
+                  <span class="language-emoji">🇬🇧</span>
+                  English
+                </span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="language"
+                  value="hi"
+                  class="language-option"
+                />
+                <span class="language-label">
+                  <span class="language-emoji">🇮🇳</span>
+                  हिंदी
+                </span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="language"
+                  value="mr"
+                  class="language-option"
+                />
+                <span class="language-label">
+                  <span class="language-emoji">🇮🇳</span>
+                  मराठी
+                </span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="language"
+                  value="gu"
+                  class="language-option"
+                />
+                <span class="language-label">
+                  <span class="language-emoji">🇮🇳</span>
+                  ગુજરાતી
+                </span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="language"
+                  value="pa"
+                  class="language-option"
+                />
+                <span class="language-label">
+                  <span class="language-emoji">🇮🇳</span>
+                  ਪੰਜਾਬੀ
+                </span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="language"
+                  value="ta"
+                  class="language-option"
+                />
+                <span class="language-label">
+                  <span class="language-emoji">🇮🇳</span>
+                  தமிழ்
+                </span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="language"
+                  value="te"
+                  class="language-option"
+                />
+                <span class="language-label">
+                  <span class="language-emoji">🇮🇳</span>
+                  తెలుగు
+                </span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="language"
+                  value="bn"
+                  class="language-option"
+                />
+                <span class="language-label">
+                  <span class="language-emoji">🇮🇳</span>
+                  বাংলা
+                </span>
+              </label>
+              <label>
+                <input
+                  type="radio"
+                  name="language"
+                  value="kn"
+                  class="language-option"
+                />
+                <span class="language-label">
+                  <span class="language-emoji">🇮🇳</span>
+                  ಕನ್ನಡ
+                </span>
+              </label>
+            </div>
+          </div>
+
+          <div class="terms-container">
+            <input type="checkbox" id="terms" name="terms" required />
+            <label for="terms" class="checkmark">
+              <svg width="12" height="10" viewBox="0 0 12 10" fill="none">
+                <path
+                  d="M1 5l3 3L11 1"
+                  stroke="currentColor"
+                  stroke-width="2"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                />
+              </svg>
+            </label>
+            <span class="terms-text">
+              I agree to Soily's <a href="#">Terms of Service</a> and
+              <a href="#">Privacy Policy</a>
+            </span>
+          </div>
+
+          <button type="submit" class="submit-btn">
+            <span class="btn-text">Create Account</span>
+            <div class="btn-loader">
+              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <circle
+                  cx="10"
+                  cy="10"
+                  r="8"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  opacity="0.25"
+                />
+                <path
+                  d="M18 10a8 8 0 01-8 8"
+                  stroke="currentColor"
+                  stroke-width="2.5"
+                  stroke-linecap="round"
+                >
+                  <animateTransform
+                    attributeName="transform"
+                    type="rotate"
+                    dur="1s"
+                    values="0 10 10;360 10 10"
+                    repeatCount="indefinite"
+                  />
+                </path>
+              </svg>
+            </div>
+          </button>
+        </form>
+
+        <div class="login-link">
+          <span>Already have an account? </span>
+          <a href="/auth/login">Sign in here</a>
+        </div>
+
+        <div class="success-message" id="successMessage">
+          <div class="success-icon">
+            <svg width="64" height="64" viewBox="0 0 64 64" fill="none">
+              <circle cx="32" cy="32" r="32" fill="#25995C" />
+              <path
+                d="M20 32l10 10 14-20"
+                stroke="white"
+                stroke-width="4"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+          </div>
+          <h3>Welcome to Soily! 🌱</h3>
+          <p>Your account has been created successfully</p>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      class SoilyRegisterForm {
+        constructor() {
+          this.form = document.getElementById("registerForm");
+          this.submitButton = this.form.querySelector(".submit-btn");
+          this.successMessage = document.getElementById("successMessage");
+          this.init();
+        }
+
+        init() {
+          this.bindEvents();
+          this.setupPasswordToggles();
+        }
+
+        bindEvents() {
+          this.form.addEventListener("submit", (e) => this.handleSubmit(e));
+
+          // Real-time validation
+          const fields = [
+            "fullName",
+            "email",
+            "phone",
+            "location",
+            "farmSize",
+            "password",
+            "confirmPassword",
+          ];
+
+          fields.forEach((field) => {
+            const input = document.getElementById(field);
+            input.addEventListener("blur", () => this.validateField(field));
+            input.addEventListener("input", () => this.clearError(field));
+          });
+        }
+
+        setupPasswordToggles() {
+          ["passwordToggle", "confirmPasswordToggle"].forEach((id) => {
+            const toggle = document.getElementById(id);
+            const inputId = id.replace("Toggle", "");
+            const input = document.getElementById(inputId);
+
+            toggle.addEventListener("click", () => {
+              const type = input.type === "password" ? "text" : "password";
+              input.type = type;
+              toggle.style.color = type === "text" ? "#25995C" : "#8792a2";
+            });
+          });
+        }
+
+        validateField(field) {
+          const input = document.getElementById(field);
+          const value = input.value.trim();
+
+          switch (field) {
+            case "fullName":
+              if (!value) {
+                this.showError(field, "Full name is required");
+                return false;
+              }
+              if (value.length < 3) {
+                this.showError(field, "Name must be at least 3 characters");
+                return false;
+              }
+              break;
+
+            case "email":
+              if (!value) {
+                this.showError(field, "Email is required");
+                return false;
+              }
+              if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+                this.showError(field, "Please enter a valid email");
+                return false;
+              }
+              break;
+
+            case "phone":
+              if (!value) {
+                this.showError(field, "Phone number is required");
+                return false;
+              }
+              if (!/^[6-9]\d{9}$/.test(value.replace(/\s/g, ""))) {
+                this.showError(
+                  field,
+                  "Please enter a valid 10-digit phone number"
+                );
+                return false;
+              }
+              break;
+
+            case "location":
+              if (!value) {
+                this.showError(field, "Farm location is required");
+                return false;
+              }
+              break;
+
+            case "farmSize":
+              if (!value) {
+                this.showError(field, "Please select your farm size");
+                return false;
+              }
+              break;
+
+            case "password":
+              if (!value) {
+                this.showError(field, "Password is required");
+                return false;
+              }
+              if (value.length < 8) {
+                this.showError(field, "Password must be at least 8 characters");
+                return false;
+              }
+              if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(value)) {
+                this.showError(field, "Include uppercase, lowercase & number");
+                return false;
+              }
+              break;
+
+            case "confirmPassword":
+              const password = document.getElementById("password").value;
+              if (!value) {
+                this.showError(field, "Please confirm your password");
+                return false;
+              }
+              if (value !== password) {
+                this.showError(field, "Passwords do not match");
+                return false;
+              }
+              break;
+          }
+
+          this.clearError(field);
+          return true;
+        }
+
+        showError(field, message) {
+          const inputGroup = document
+            .getElementById(field)
+            .closest(".input-group");
+          const errorElement = document.getElementById(`${field}Error`);
+
+          inputGroup.classList.add("error");
+          errorElement.textContent = message;
+          errorElement.classList.add("show");
+        }
+
+        clearError(field) {
+          const inputGroup = document
+            .getElementById(field)
+            .closest(".input-group");
+          const errorElement = document.getElementById(`${field}Error`);
+
+          inputGroup.classList.remove("error");
+          errorElement.classList.remove("show");
+          setTimeout(() => {
+            errorElement.textContent = "";
+          }, 200);
+        }
+
+        async handleSubmit(e) {
+          e.preventDefault();
+
+          // Validate all fields
+          const fields = [
+            "fullName",
+            "email",
+            "phone",
+            "location",
+            "farmSize",
+            "password",
+            "confirmPassword",
+          ];
+
+          let isValid = true;
+          fields.forEach((field) => {
+            if (!this.validateField(field)) {
+              isValid = false;
+            }
+          });
+
+          // Check terms
+          const termsCheckbox = document.getElementById("terms");
+          if (!termsCheckbox.checked) {
+            alert("Please accept the Terms of Service and Privacy Policy");
+            isValid = false;
+          }
+
+          if (!isValid) return;
+
+          this.setLoading(true);
+
+          // Get selected language
+          const selectedLanguage = document.querySelector(
+            'input[name="language"]:checked'
+          ).value;
+
+          // Prepare form data
+          const formData = {
+            fullName: document.getElementById("fullName").value.trim(),
+            email: document.getElementById("email").value.trim(),
+            phone: document.getElementById("phone").value.trim(),
+            location: document.getElementById("location").value.trim(),
+            farmSize: document.getElementById("farmSize").value,
+            password: document.getElementById("password").value,
+            language: selectedLanguage,
+          };
+
+          try {
+            const response = await fetch("/auth/register", {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify(formData),
+            });
+
+            const data = await response.json();
+
+            if (response.ok) {
+              this.showSuccess();
+              // Redirect after 2.5 seconds
+              setTimeout(() => {
+                window.location.href = "/auth/login";
+              }, 2500);
+            } else {
+              // Show error
+              if (data.field) {
+                this.showError(data.field, data.message);
+              } else {
+                alert(data.message || "Registration failed. Please try again.");
+              }
+            }
+          } catch (error) {
+            console.error("Registration error:", error);
+            alert("An error occurred. Please try again.");
+          } finally {
+            this.setLoading(false);
+          }
+        }
+
+        setLoading(loading) {
+          this.submitButton.classList.toggle("loading", loading);
+          this.submitButton.disabled = loading;
+        }
+
+        showSuccess() {
+          this.form.style.transform = "scale(0.95)";
+          this.form.style.opacity = "0";
+
+          setTimeout(() => {
+            this.form.style.display = "none";
+            document.querySelector(".login-link").style.display = "none";
+            this.successMessage.classList.add("show");
+          }, 300);
+        }
+      }
+
+      document.addEventListener("DOMContentLoaded", () => {
+        new SoilyRegisterForm();
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,886 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SOILY - Profile</title>
+    <link rel="icon" type="image/x-icon" href="/logo2.png">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #25995C;
+            --primary-dark: #007236;
+            --secondary: #34D399;
+            --bg-light: #F0FDF4;
+            --text-dark: #1F2937;
+            --text-light: #6B7280;
+            --border: #E5E7EB;
+            --white: #FFFFFF;
+            --danger: #EF4444;
+            --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: var(--bg-light);
+            color: var(--text-dark);
+            line-height: 1.6;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 6px;
+            transition: background 0.2s;
+        }
+
+        .back-btn:hover {
+            background: var(--white);
+        }
+
+        .page-title {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text-dark);
+        }
+
+        .profile-grid {
+            display: grid;
+            grid-template-columns: 350px 1fr;
+            gap: 24px;
+        }
+
+        .profile-sidebar {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            height: fit-content;
+        }
+
+        .profile-avatar {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 48px;
+            font-weight: 700;
+            margin: 0 auto 20px;
+        }
+
+        .profile-name {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .profile-email {
+            color: var(--text-light);
+            font-size: 14px;
+            margin-bottom: 8px;
+        }
+
+        .profile-badge {
+            display: inline-block;
+            padding: 4px 12px;
+            background: var(--bg-light);
+            color: var(--primary);
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 24px;
+        }
+
+        .profile-stats {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 4px;
+        }
+
+        .profile-actions {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border);
+        }
+
+        .action-link {
+            display: block;
+            padding: 12px 16px;
+            color: var(--text-dark);
+            text-decoration: none;
+            border-radius: 8px;
+            transition: all 0.2s;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .action-link:hover {
+            background: var(--bg-light);
+        }
+
+        .action-link.danger {
+            color: var(--danger);
+        }
+
+        .profile-content {
+            background: var(--white);
+            border-radius: 12px;
+            padding: 32px;
+            box-shadow: var(--shadow);
+        }
+
+        .tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 32px;
+            border-bottom: 2px solid var(--border);
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            color: var(--text-light);
+            font-family: 'Poppins', sans-serif;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            transition: color 0.2s;
+        }
+
+        .tab.active {
+            color: var(--primary);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 32px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: var(--text-dark);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .form-group {
+            position: relative;
+        }
+
+        .form-group.full-width {
+            grid-column: 1 / -1;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: var(--text-dark);
+            margin-bottom: 8px;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            border-color: var(--primary);
+        }
+
+        .form-group input:disabled {
+            background: var(--bg-light);
+            cursor: not-allowed;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 12px;
+            justify-content: flex-end;
+            margin-top: 24px;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(37, 153, 92, 0.3);
+        }
+
+        .btn-secondary {
+            background: var(--bg-light);
+            color: var(--text-dark);
+        }
+
+        .btn-secondary:hover {
+            background: var(--border);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #DC2626;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+
+        .info-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: var(--bg-light);
+            border-radius: 8px;
+            margin-bottom: 12px;
+        }
+
+        .info-label {
+            font-size: 14px;
+            color: var(--text-light);
+            font-weight: 500;
+        }
+
+        .info-value {
+            font-size: 14px;
+            color: var(--text-dark);
+            font-weight: 600;
+        }
+
+        .alert {
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background: #D1FAE5;
+            color: #065F46;
+            border-left: 4px solid var(--primary);
+        }
+
+        .alert-error {
+            background: #FEE2E2;
+            color: #991B1B;
+            border-left: 4px solid var(--danger);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .profile-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs {
+                overflow-x: auto;
+            }
+
+            .tab {
+                white-space: nowrap;
+            }
+        }
+
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">
+            <div>
+                <a href="/dashboard" class="back-btn">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                    </svg>
+                    Back to Dashboard
+                </a>
+                <h1 class="page-title">My Profile</h1>
+            </div>
+        </div>
+
+        <div class="profile-grid">
+            <!-- Sidebar -->
+            <div class="profile-sidebar">
+                <div class="profile-avatar" id="profileAvatar">F</div>
+                <h2 class="profile-name" id="profileName">Loading...</h2>
+                <p class="profile-email" id="profileEmail">Loading...</p>
+                <span class="profile-badge" id="profileBadge">Farmer</span>
+
+                <div class="profile-stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="farmSizeStat">--</div>
+                        <div class="stat-label">Farm Size</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="memberSince">--</div>
+                        <div class="stat-label">Member Since</div>
+                    </div>
+                </div>
+
+                <div class="profile-actions">
+                    <a href="/dashboard" class="action-link">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        Dashboard
+                    </a>
+                    <a href="/settings" class="action-link">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        Settings
+                    </a>
+                    <a href="/auth/logout" class="action-link danger">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        Logout
+                    </a>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="profile-content">
+                <div class="tabs">
+                    <button class="tab active" data-tab="personal">Personal Information</button>
+                    <button class="tab" data-tab="farm">Farm Details</button>
+                    <button class="tab" data-tab="security">Security</button>
+                </div>
+
+                <div id="alertContainer"></div>
+
+                <!-- Personal Information Tab -->
+                <div class="tab-content active" id="personal-tab">
+                    <form id="personalInfoForm">
+                        <div class="form-section">
+                            <h3 class="section-title">Basic Information</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="fullName">Full Name *</label>
+                                    <input type="text" id="fullName" name="fullName" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="email">Email Address</label>
+                                    <input type="email" id="email" name="email" disabled>
+                                </div>
+                                <div class="form-group">
+                                    <label for="phone">Phone Number *</label>
+                                    <input type="tel" id="phone" name="phone" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="language">Preferred Language *</label>
+                                    <select id="language" name="language" required>
+                                        <option value="en">English</option>
+                                        <option value="hi">हिंदी (Hindi)</option>
+                                        <option value="mr">मराठी (Marathi)</option>
+                                        <option value="gu">ગુજરાતી (Gujarati)</option>
+                                        <option value="pa">ਪੰਜਾਬੀ (Punjabi)</option>
+                                        <option value="ta">தமிழ் (Tamil)</option>
+                                        <option value="te">తెలుగు (Telugu)</option>
+                                        <option value="bn">বাংলা (Bengali)</option>
+                                        <option value="kn">ಕನ್ನಡ (Kannada)</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="window.location.reload()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Farm Details Tab -->
+                <div class="tab-content" id="farm-tab">
+                    <form id="farmDetailsForm">
+                        <div class="form-section">
+                            <h3 class="section-title">Farm Information</h3>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label for="location">Farm Location *</label>
+                                    <input type="text" id="location" name="location" required placeholder="City/District">
+                                </div>
+                                <div class="form-group">
+                                    <label for="farmSize">Farm Size *</label>
+                                    <select id="farmSize" name="farmSize" required>
+                                        <option value="small">Small (Less than 2 acres)</option>
+                                        <option value="medium">Medium (2-10 acres)</option>
+                                        <option value="large">Large (10-50 acres)</option>
+                                        <option value="xlarge">Very Large (More than 50 acres)</option>
+                                    </select>
+                                </div>
+
+                                <div class="form-group full-width">
+                                    <label for="notes">Additional Notes</label>
+                                    <textarea id="notes" name="notes" placeholder="Any additional information about your farm..."></textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="window.location.reload()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Security Tab -->
+                <div class="tab-content" id="security-tab">
+                    <form id="securityForm">
+                        <div class="form-section">
+                            <h3 class="section-title">Change Password</h3>
+                            <div class="form-grid">
+                                <div class="form-group full-width">
+                                    <label for="currentPassword">Current Password *</label>
+                                    <input type="password" id="currentPassword" name="currentPassword" required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="newPassword">New Password *</label>
+                                    <input type="password" id="newPassword" name="newPassword" required minlength="8">
+                                </div>
+                                <div class="form-group">
+                                    <label for="confirmPassword">Confirm New Password *</label>
+                                    <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8">
+                                </div>
+                            </div>
+                            <p style="font-size: 13px; color: var(--text-light); margin-top: 8px;">
+                                Password must be at least 8 characters and include uppercase, lowercase, and numbers.
+                            </p>
+                        </div>
+
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary" onclick="document.getElementById('securityForm').reset()">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Update Password</button>
+                        </div>
+                    </form>
+
+                    <div class="form-section" style="margin-top: 40px; padding-top: 40px; border-top: 1px solid var(--border);">
+                        <h3 class="section-title" style="color: var(--danger);">Danger Zone</h3>
+                        <div class="info-item" style="background: #FEE2E2; border-left: 4px solid var(--danger);">
+                            <div>
+                                <div class="info-label" style="color: var(--danger); font-weight: 600;">Delete Account</div>
+                                <p style="font-size: 13px; color: #991B1B; margin-top: 4px;">Once you delete your account, there is no going back.</p>
+                            </div>
+                            <button class="btn btn-danger" onclick="confirmDeleteAccount()">Delete Account</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ProfileManager {
+            constructor() {
+                this.farmerData = null;
+                this.init();
+            }
+
+            async init() {
+                this.setupTabs();
+                this.setupForms();
+                await this.loadProfile();
+            }
+
+            setupTabs() {
+                const tabs = document.querySelectorAll('.tab');
+                tabs.forEach(tab => {
+                    tab.addEventListener('click', () => {
+                        const tabName = tab.getAttribute('data-tab');
+                        this.switchTab(tabName);
+                    });
+                });
+            }
+
+            switchTab(tabName) {
+                // Update tab buttons
+                document.querySelectorAll('.tab').forEach(tab => {
+                    tab.classList.remove('active');
+                    if (tab.getAttribute('data-tab') === tabName) {
+                        tab.classList.add('active');
+                    }
+                });
+
+                // Update tab content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`${tabName}-tab`).classList.add('active');
+            }
+
+            setupForms() {
+                // Personal Info Form
+                document.getElementById('personalInfoForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.updatePersonalInfo();
+                });
+
+                // Farm Details Form
+                document.getElementById('farmDetailsForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.updateFarmDetails();
+                });
+
+                // Security Form
+                document.getElementById('securityForm').addEventListener('submit', (e) => {
+                    e.preventDefault();
+                    this.updatePassword();
+                });
+            }
+
+            async loadProfile() {
+                this.showLoading(true);
+                try {
+                    const response = await fetch('/api/farmer/profile');
+                    const data = await response.json();
+
+                    if (data.success && data.farmer) {
+                        this.farmerData = data.farmer;
+                        this.populateProfile(data.farmer);
+                    }
+                } catch (error) {
+                    console.error('Failed to load profile:', error);
+                    this.showAlert('Failed to load profile data', 'error');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            populateProfile(farmer) {
+                // Sidebar
+                document.getElementById('profileAvatar').textContent = farmer.fullName.charAt(0).toUpperCase();
+                document.getElementById('profileName').textContent = farmer.fullName;
+                document.getElementById('profileEmail').textContent = farmer.email;
+                
+                const farmSizes = { small: '< 2', medium: '2-10', large: '10-50', xlarge: '50+' };
+                document.getElementById('farmSizeStat').textContent = farmSizes[farmer.farmSize] || '--';
+                
+                const memberDate = new Date(farmer.createdAt);
+                document.getElementById('memberSince').textContent = memberDate.getFullYear();
+
+                // Personal Info Form
+                document.getElementById('fullName').value = farmer.fullName;
+                document.getElementById('email').value = farmer.email;
+                document.getElementById('phone').value = farmer.phone;
+                document.getElementById('language').value = farmer.preferredLanguage || 'en';
+
+                // Farm Details Form
+                document.getElementById('location').value = farmer.location;
+                document.getElementById('farmSize').value = farmer.farmSize;
+                // if (farmer.soilType) document.getElementById('soilType').value = farmer.soilType;
+                // if (farmer.irrigationType) document.getElementById('irrigationType').value = farmer.irrigationType;
+                if (farmer.notes) document.getElementById('notes').value = farmer.notes;
+            }
+
+            async updatePersonalInfo() {
+                this.showLoading(true);
+                const formData = {
+                    fullName: document.getElementById('fullName').value.trim(),
+                    phone: document.getElementById('phone').value.trim(),
+                    preferredLanguage: document.getElementById('language').value
+                };
+
+                try {
+                    const response = await fetch('/api/farmer/profile', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showAlert('Personal information updated successfully!', 'success');
+                        await this.loadProfile();
+                    } else {
+                        this.showAlert(data.message || 'Failed to update profile', 'error');
+                    }
+                } catch (error) {
+                    console.error('Update error:', error);
+                    this.showAlert('An error occurred. Please try again.', 'error');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            async updateFarmDetails() {
+                this.showLoading(true);
+                const formData = {
+                    location: document.getElementById('location').value.trim(),
+                    farmSize: document.getElementById('farmSize').value,
+                    // soilType: document.getElementById('soilType').value,
+                    // irrigationType: document.getElementById('irrigationType').value,
+                    notes: document.getElementById('notes').value.trim()
+                };
+
+                try {
+                    const response = await fetch('/api/farmer/farm-details', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(formData)
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showAlert('Farm details updated successfully!', 'success');
+                        await this.loadProfile();
+                    } else {
+                        this.showAlert(data.message || 'Failed to update farm details', 'error');
+                    }
+                } catch (error) {
+                    console.error('Update error:', error);
+                    this.showAlert('An error occurred. Please try again.', 'error');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            async updatePassword() {
+                const currentPassword = document.getElementById('currentPassword').value;
+                const newPassword = document.getElementById('newPassword').value;
+                const confirmPassword = document.getElementById('confirmPassword').value;
+
+                // Validation
+                if (newPassword !== confirmPassword) {
+                    this.showAlert('New passwords do not match!', 'error');
+                    return;
+                }
+
+                if (newPassword.length < 8) {
+                    this.showAlert('Password must be at least 8 characters!', 'error');
+                    return;
+                }
+
+                if (!/(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/.test(newPassword)) {
+                    this.showAlert('Password must include uppercase, lowercase, and numbers!', 'error');
+                    return;
+                }
+
+                this.showLoading(true);
+
+                try {
+                    const response = await fetch('/api/farmer/change-password', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ currentPassword, newPassword })
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        this.showAlert('Password updated successfully!', 'success');
+                        document.getElementById('securityForm').reset();
+                    } else {
+                        this.showAlert(data.message || 'Failed to update password', 'error');
+                    }
+                } catch (error) {
+                    console.error('Password update error:', error);
+                    this.showAlert('An error occurred. Please try again.', 'error');
+                } finally {
+                    this.showLoading(false);
+                }
+            }
+
+            showAlert(message, type) {
+                const alertContainer = document.getElementById('alertContainer');
+                const alertClass = type === 'success' ? 'alert-success' : 'alert-error';
+                
+                alertContainer.innerHTML = `
+                    <div class="alert ${alertClass} show">
+                        ${message}
+                    </div>
+                `;
+
+                setTimeout(() => {
+                    alertContainer.innerHTML = '';
+                }, 5000);
+
+                // Scroll to top
+                window.scrollTo({ top: 0, behavior: 'smooth' });
+            }
+
+            showLoading(show) {
+                const overlay = document.getElementById('loadingOverlay');
+                if (show) {
+                    overlay.classList.add('show');
+                } else {
+                    overlay.classList.remove('show');
+                }
+            }
+        }
+
+        function confirmDeleteAccount() {
+            if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                if (confirm('This will permanently delete all your data. Are you absolutely sure?')) {
+                    // Call delete API
+                    fetch('/api/farmer/delete-account', {
+                        method: 'DELETE'
+                    }).then(() => {
+                        window.location.href = '/auth/login';
+                    });
+                }
+            }
+        }
+
+        // Initialize
+        document.addEventListener('DOMContentLoaded', () => {
+            new ProfileManager();
+        });
+    </script>
+</body>
+</html>

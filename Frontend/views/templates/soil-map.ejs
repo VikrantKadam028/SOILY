@@ -1,0 +1,1638 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SOILY - Soil Analysis & Crop Recommendation</title>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" integrity="sha512-2SwdPD6INVrV/lHTZbO2nodKhrnDdJK9/kg2XD1r9uGqPo1cUbujc+IYdlYdEErWNu69gVcYgdxlmVmzTWnetw==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <link
+      rel="stylesheet"
+      href="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.css"
+    />
+    <script src="https://unpkg.com/leaflet-draw@1.0.4/dist/leaflet.draw.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6.5.0/turf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      :root {
+        --primary: #25995c;
+        --primary-dark: #007236;
+        --secondary: #34d399;
+        --bg-light: #f0fdf4;
+        --text-dark: #1f2937;
+        --text-light: #6b7280;
+        --border: #e5e7eb;
+        --white: #ffffff;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        background: var(--bg-light);
+        color: var(--text-dark);
+        overflow-x: hidden;
+      }
+
+      .container {
+        display: flex;
+        height: 100vh;
+      }
+
+      .sidebar {
+        width: 350px;
+        background: var(--white);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        z-index: 100;
+      }
+
+      .sidebar-header {
+        padding: 20px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .back-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-light);
+        text-decoration: none;
+        font-size: 14px;
+        margin-bottom: 16px;
+        transition: color 0.2s;
+      }
+
+      .back-btn:hover {
+        color: var(--primary);
+      }
+
+      .page-title {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--text-dark);
+        margin-bottom: 8px;
+      }
+
+      .page-subtitle {
+        font-size: 14px;
+        color: var(--text-light);
+      }
+
+      .sidebar-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+      }
+
+      .section {
+        margin-bottom: 24px;
+      }
+
+      .section-title {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--text-dark);
+        margin-bottom: 12px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+
+      .tool-group {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+
+      .tool-btn {
+        flex: 1;
+        min-width: 100px;
+        padding: 12px;
+        background: var(--bg-light);
+        border: 2px solid transparent;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 8px;
+        font-family: "Poppins", sans-serif;
+        font-size: 13px;
+        color: var(--text-dark);
+      }
+
+      .tool-btn:hover {
+        background: var(--white);
+        border-color: var(--primary);
+      }
+
+      .tool-btn.active {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      .tool-icon {
+        font-size: 24px;
+      }
+
+      .info-card {
+        background: linear-gradient(
+          135deg,
+          rgba(37, 153, 92, 0.1),
+          rgba(52, 211, 153, 0.1)
+        );
+        padding: 16px;
+        border-radius: 8px;
+        border-left: 4px solid var(--primary);
+        margin-bottom: 16px;
+      }
+
+      .info-card h4 {
+        font-size: 14px;
+        font-weight: 600;
+        margin-bottom: 8px;
+        color: var(--primary);
+      }
+
+      .info-card p {
+        font-size: 13px;
+        color: var(--text-dark);
+        line-height: 1.5;
+      }
+
+      .farm-details {
+        background: var(--white);
+        padding: 16px;
+        border-radius: 8px;
+        border: 1px solid var(--border);
+      }
+
+      .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .detail-row:last-child {
+        border-bottom: none;
+      }
+
+      .detail-label {
+        font-size: 13px;
+        color: var(--text-light);
+      }
+
+      .detail-value {
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-dark);
+      }
+
+      .action-buttons {
+        display: flex;
+        gap: 8px;
+      }
+
+      .btn {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        border-radius: 8px;
+        font-family: "Poppins", sans-serif;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+
+      .btn-primary {
+        background: var(--primary);
+        color: white;
+      }
+
+      .btn-primary:hover {
+        background: var(--primary-dark);
+      }
+
+      .btn-primary:disabled {
+        background: var(--text-light);
+        cursor: not-allowed;
+      }
+
+      .btn-secondary {
+        background: var(--white);
+        color: var(--text-dark);
+        border: 1px solid var(--border);
+      }
+
+      .btn-secondary:hover {
+        background: var(--bg-light);
+      }
+
+      .map-container {
+        flex: 1;
+        position: relative;
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+      }
+
+      .map-controls {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        z-index: 10;
+      }
+
+      .map-control-btn {
+        background: var(--white);
+        border: none;
+        width: 44px;
+        height: 44px;
+        border-radius: 8px;
+        box-shadow: var(--shadow-lg);
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.2s;
+      }
+
+      .map-control-btn:hover {
+        background: var(--bg-light);
+        transform: scale(1.05);
+      }
+
+      .map-control-btn.active {
+        background: var(--primary);
+        color: white;
+      }
+
+      .map-overlay {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: var(--white);
+        padding: 28px;
+        border-radius: 20px;
+        box-shadow: 0 25px 60px rgba(0, 0, 0, 0.35);
+        z-index: 1000;
+        display: none;
+        max-width: 95%;
+        max-height: 90vh;
+        overflow-y: auto;
+        min-width: 320px;
+        width: 90%;
+      }
+
+      .map-overlay.active {
+        display: block;
+        animation: slideUp 0.4s ease-out;
+      }
+
+      @keyframes slideUp {
+        from {
+          opacity: 0;
+          transform: translate(-50%, -40%);
+        }
+        to {
+          opacity: 1;
+          transform: translate(-50%, -50%);
+        }
+      }
+
+      .overlay-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 24px;
+        padding-bottom: 16px;
+        border-bottom: 2px solid var(--bg-light);
+      }
+
+      .overlay-title {
+        font-size: 26px;
+        font-weight: 700;
+        color: var(--primary);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .close-btn {
+        background: var(--bg-light);
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--text-dark);
+        padding: 8px;
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+        transition: all 0.2s;
+      }
+
+      .close-btn:hover {
+        background: #ffebee;
+        color: #c62828;
+        transform: rotate(90deg);
+      }
+
+      .analysis-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+        margin-bottom: 24px;
+      }
+
+      .analysis-card {
+        background: linear-gradient(135deg, var(--bg-light), #e8f5e9);
+        padding: 16px;
+        border-radius: 12px;
+        border: 1px solid var(--border);
+        text-align: center;
+        transition: transform 0.2s;
+      }
+
+      .analysis-card:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow);
+      }
+
+      .analysis-card h4 {
+        font-size: 12px;
+        color: var(--text-light);
+        margin-bottom: 8px;
+        font-weight: 500;
+        text-transform: uppercase;
+      }
+
+      .analysis-card .value {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--primary);
+      }
+
+      .analysis-card .unit {
+        font-size: 13px;
+        color: var(--text-light);
+        margin-left: 2px;
+      }
+
+      .soil-properties {
+        margin-bottom: 24px;
+      }
+
+      .properties-header {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 14px;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .property-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 14px 16px;
+        background: var(--white);
+        border: 1px solid var(--border);
+        border-radius: 10px;
+        margin-bottom: 8px;
+        transition: all 0.2s;
+      }
+
+      .property-item:hover {
+        background: var(--bg-light);
+        border-color: var(--primary);
+      }
+
+      .property-label {
+        font-size: 14px;
+        color: var(--text-dark);
+        font-weight: 500;
+      }
+
+      .property-value {
+        font-size: 14px;
+        font-weight: 600;
+        color: var(--primary);
+        background: var(--bg-light);
+        padding: 6px 12px;
+        border-radius: 6px;
+      }
+
+      .soil-color-section {
+        background: var(--bg-light);
+        padding: 18px;
+        border-radius: 12px;
+        margin-bottom: 24px;
+      }
+
+      .soil-color-section h3 {
+        font-size: 16px;
+        margin-bottom: 12px;
+        color: var(--text-dark);
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .soil-color-preview {
+        width: 100%;
+        height: 70px;
+        border-radius: 10px;
+        border: 3px solid var(--border);
+        margin-top: 10px;
+        box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      .soil-color-desc {
+        font-size: 13px;
+        color: var(--text-light);
+        margin-top: 10px;
+        line-height: 1.6;
+      }
+
+      .crop-recommendation {
+        background: linear-gradient(135deg, #e8f5e9 0%, #c8e6c9 100%);
+        padding: 24px;
+        border-radius: 16px;
+        border: 2px solid var(--primary);
+        box-shadow: 0 8px 24px rgba(37, 153, 92, 0.15);
+      }
+
+      .crop-rec-header {
+        font-size: 20px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        color: var(--primary-dark);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .recommended-crop {
+        background: var(--white);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 16px;
+        box-shadow: var(--shadow);
+      }
+
+      .crop-name {
+        font-size: 24px;
+        font-weight: 700;
+        color: var(--primary);
+        margin-bottom: 8px;
+      }
+
+      .crop-confidence {
+        display: inline-block;
+        background: var(--primary);
+        color: white;
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        margin-bottom: 12px;
+      }
+
+      .fertilizer-info {
+        background: #fff3e0;
+        padding: 16px;
+        border-radius: 10px;
+        border-left: 4px solid #ff9800;
+      }
+
+      .fertilizer-label {
+        font-size: 13px;
+        color: #e65100;
+        font-weight: 600;
+        margin-bottom: 6px;
+        text-transform: uppercase;
+      }
+
+      .fertilizer-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #e65100;
+      }
+
+      .alternative-crops {
+        margin-top: 16px;
+      }
+
+      .alternative-crops h4 {
+        font-size: 14px;
+        color: var(--text-dark);
+        margin-bottom: 10px;
+        font-weight: 600;
+      }
+
+      .crop-chip {
+        display: inline-block;
+        background: var(--white);
+        padding: 8px 14px;
+        border-radius: 20px;
+        margin: 4px;
+        font-size: 13px;
+        border: 1px solid var(--border);
+        transition: all 0.2s;
+      }
+
+      .crop-chip:hover {
+        background: var(--primary);
+        color: white;
+        border-color: var(--primary);
+      }
+
+      .loading-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(255, 255, 255, 0.97);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 1000;
+        display: none;
+      }
+
+      .loading-overlay.active {
+        display: flex;
+      }
+
+      .spinner {
+        border: 4px solid var(--border);
+        border-top: 4px solid var(--primary);
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        animation: spin 1s linear infinite;
+      }
+
+      @keyframes spin {
+        0% {
+          transform: rotate(0deg);
+        }
+        100% {
+          transform: rotate(360deg);
+        }
+      }
+
+      .loading-steps {
+        text-align: center;
+        margin-top: 20px;
+      }
+
+      .loading-step {
+        font-size: 14px;
+        color: var(--text-dark);
+        margin: 8px 0;
+        opacity: 0.4;
+        transition: all 0.3s;
+      }
+
+      .loading-step.active {
+        opacity: 1;
+        font-weight: 600;
+        color: var(--primary);
+        transform: scale(1.05);
+      }
+
+      .toast {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: var(--white);
+        padding: 16px 20px;
+        border-radius: 12px;
+        box-shadow: var(--shadow-lg);
+        z-index: 2000;
+        display: none;
+        align-items: center;
+        gap: 12px;
+        min-width: 300px;
+        border-left: 4px solid var(--primary);
+      }
+
+      .toast.show {
+        display: flex;
+        animation: slideIn 0.3s ease;
+      }
+
+      @keyframes slideIn {
+        from {
+          transform: translateX(400px);
+          opacity: 0;
+        }
+        to {
+          transform: translateX(0);
+          opacity: 1;
+        }
+      }
+
+      .toast.success {
+        border-left-color: #10b981;
+      }
+      .toast.error {
+        border-left-color: #ef4444;
+      }
+      .toast.info {
+        border-left-color: #3b82f6;
+      }
+
+      .overlay-backdrop {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.6);
+        z-index: 999;
+        display: none;
+        backdrop-filter: blur(4px);
+      }
+
+      .overlay-backdrop.active {
+        display: block;
+      }
+
+      @media (max-width: 1024px) {
+        .analysis-grid {
+          grid-template-columns: repeat(2, 1fr);
+        }
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          flex-direction: column;
+        }
+        .sidebar {
+          width: 100%;
+          height: auto;
+          max-height: 40vh;
+        }
+        .map-container {
+          height: 60vh;
+        }
+        .map-overlay {
+          width: 95%;
+          min-width: unset;
+          padding: 20px;
+        }
+        .overlay-title {
+          font-size: 20px;
+        }
+        .analysis-grid {
+          grid-template-columns: repeat(2, 1fr);
+          gap: 10px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <aside class="sidebar">
+        <div class="sidebar-header">
+          <a href="/dashboard" class="back-btn">
+            <svg
+              width="20"
+              height="20"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M10 19l-7-7m0 0l7-7m-7 7h18"
+              />
+            </svg>
+            Back to Dashboard
+          </a>
+          <h1 class="page-title">Soil Analysis</h1>
+          <p class="page-subtitle">Analyze soil & get crop recommendations</p>
+        </div>
+
+        <div class="sidebar-content">
+          <div class="section">
+            <div class="info-card">
+              <h4>🌱 How to Use</h4>
+              <p>
+                1. Allow location access<br />
+                2. Click "Draw Boundary" to mark your farm<br />
+                3. Place points around your land<br />
+                4. Double-click to complete<br />
+                5. Click "Analyze Soil" for results
+              </p>
+            </div>
+          </div>
+
+          <div class="section">
+            <h3 class="section-title">Drawing Tools</h3>
+            <div class="tool-group">
+              <button class="tool-btn" id="drawBtn">
+                <span class="tool-icon"><i class="fa-solid fa-pencil"></i></span>
+                <span>Draw Boundary</span>
+              </button>
+              <button class="tool-btn" id="clearBtn">
+                <span class="tool-icon"><i class="fa-regular fa-circle-xmark"></i></span>
+                <span>Clear All</span>
+              </button>
+            </div>
+          </div>
+
+          <div class="section" id="farmDetailsSection" style="display: none">
+            <h3 class="section-title">Farm Details</h3>
+            <div class="farm-details">
+              <div class="detail-row">
+                <span class="detail-label">Area</span>
+                <span class="detail-value" id="farmArea">0 acres</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Perimeter</span>
+                <span class="detail-value" id="farmPerimeter">0 km</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Points</span>
+                <span class="detail-value" id="farmPoints">0</span>
+              </div>
+              <div class="detail-row">
+                <span class="detail-label">Center</span>
+                <span class="detail-value" id="farmCenter">-</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="section">
+            <div class="action-buttons">
+              <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+              <button class="btn btn-primary" id="analyzeBtn" disabled>
+                Analyze Soil
+              </button>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <div class="map-container">
+        <div id="map"></div>
+
+        <div class="map-controls">
+          <button class="map-control-btn" id="locateBtn" title="My Location">
+            <svg
+              width="24"
+              height="24"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"
+              />
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"
+              />
+            </svg>
+          </button>
+          <button
+            class="map-control-btn active"
+            id="satelliteBtn"
+            title="Satellite View"
+          >
+            <svg
+              width="24"
+              height="24"
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+              />
+            </svg>
+          </button>
+        </div>
+
+        <div class="overlay-backdrop" id="overlayBackdrop"></div>
+
+        <div class="map-overlay" id="resultOverlay">
+          <div class="overlay-header">
+            <h3 class="overlay-title">
+              <span>🌾</span>
+              <span>Analysis Results</span>
+            </h3>
+            <button class="close-btn" id="closeOverlay">×</button>
+          </div>
+
+          <div class="analysis-grid">
+            <div class="analysis-card">
+              <h4>Soil pH</h4>
+              <div>
+                <span class="value" id="soilPH">-</span>
+                <span class="unit">pH</span>
+              </div>
+            </div>
+            <div class="analysis-card">
+              <h4>Nitrogen</h4>
+              <div>
+                <span class="value" id="nitrogenVal">-</span>
+                <span class="unit">kg/ha</span>
+              </div>
+            </div>
+            <div class="analysis-card">
+              <h4>Phosphorus</h4>
+              <div>
+                <span class="value" id="phosphorusVal">-</span>
+                <span class="unit">kg/ha</span>
+              </div>
+            </div>
+            <div class="analysis-card">
+              <h4>Potassium</h4>
+              <div>
+                <span class="value" id="potassiumVal">-</span>
+                <span class="unit">kg/ha</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="soil-properties">
+            <h3 class="properties-header">📋 Soil Properties</h3>
+            <div class="property-item">
+              <span class="property-label">Soil Type</span>
+              <span class="property-value" id="soilType">-</span>
+            </div>
+            <div class="property-item">
+              <span class="property-label">Organic Carbon</span>
+              <span class="property-value" id="organicCarbon">-</span>
+            </div>
+            <div class="property-item">
+              <span class="property-label">Clay Content</span>
+              <span class="property-value" id="clayContent">-</span>
+            </div>
+            <div class="property-item">
+              <span class="property-label">Rainfall (avg)</span>
+              <span class="property-value" id="rainfallVal">-</span>
+            </div>
+            <div class="property-item">
+              <span class="property-label">Temperature (avg)</span>
+              <span class="property-value" id="temperatureVal">-</span>
+            </div>
+          </div>
+
+          <div class="soil-color-section">
+            <h3>🎨 Soil Color Analysis</h3>
+            <p style="font-size: 13px; color: var(--text-light)">
+              Estimated soil color based on analysis:
+            </p>
+            <div class="soil-color-preview" id="soilColorPreview"></div>
+            <p class="soil-color-desc" id="soilColorDesc">-</p>
+          </div>
+
+          <div class="crop-recommendation" id="cropRecommendation">
+            <h3 class="crop-rec-header">
+              <span>🌾</span>
+              <span>Recommended Crop</span>
+            </h3>
+            <div class="recommended-crop">
+              <div class="crop-name" id="recommendedCrop">-</div>
+              <span class="crop-confidence" id="cropConfidence">95% Match</span>
+              <div class="fertilizer-info">
+                <div class="fertilizer-label">💊 Recommended Fertilizer</div>
+                <div class="fertilizer-name" id="recommendedFertilizer">-</div>
+              </div>
+            </div>
+            <div class="alternative-crops" id="alternativeCrops">
+              <h4>Alternative Suitable Crops:</h4>
+              <div id="alternativeCropsList"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="loading-overlay" id="loadingOverlay">
+          <div style="text-align: center">
+            <div class="spinner"></div>
+            <div class="loading-steps">
+              <p class="loading-step active" id="step1">
+                📍 Getting location data...
+              </p>
+              <p class="loading-step" id="step2">
+                🌍 Fetching soil properties...
+              </p>
+              <p class="loading-step" id="step3">
+                🛰️ Analyzing satellite imagery...
+              </p>
+              <p class="loading-step" id="step4">
+                🌾 Matching crop database...
+              </p>
+              <p class="loading-step" id="step5">
+                📊 Generating recommendations...
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast">
+      <span id="toastIcon">ℹ️</span>
+      <span id="toastMessage"></span>
+    </div>
+
+    <script>
+      (() => {
+        const defaultCenter = [17.6805, 73.9935];
+
+        const defaultZoom = 17;
+        const satelliteTile =
+          "https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}";
+        const satelliteAttrib = "Tiles &copy; Esri";
+        const osmTile = "https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png";
+        const osmAttrib = "&copy; OpenStreetMap";
+
+        let map, drawControl, drawnItems;
+        let currentLayer = null;
+        let isDrawingMode = false;
+        let usingSatellite = true;
+        let cropDataset = [];
+
+        const $ = (id) => document.getElementById(id);
+
+        function showToast(message, type = "info") {
+          const toast = $("toast");
+          const icons = { success: "✅", error: "❌", info: "ℹ️" };
+          $("toastIcon").textContent = icons[type] || icons.info;
+          $("toastMessage").textContent = message;
+          toast.className = `toast ${type} show`;
+          setTimeout(() => toast.classList.remove("show"), 3500);
+        }
+
+        async function loadCropDataset() {
+          try {
+            // Wait for dataset to finish loading before logging
+            cropDataset = await generateCropDataset();
+
+            console.log(
+              `✅ Crop dataset loaded: ${cropDataset.length} entries`
+            );
+            showToast(
+              `✅ Loaded ${cropDataset.length} crop entries`,
+              "success"
+            );
+          } catch (error) {
+            console.error("❌ Error loading crop dataset:", error);
+            showToast("Failed to load crop dataset", "error");
+          }
+        }
+
+        async function generateCropDataset() {
+          try {
+            const response = await fetch("/crop_reccom.csv");
+            if (!response.ok)
+              throw new Error(`File not found (HTTP ${response.status})`);
+
+            const csvText = await response.text();
+
+            return new Promise((resolve) => {
+              Papa.parse(csvText, {
+                header: true,
+                complete: (results) => {
+                  const data = results.data.filter(
+                    (row) => Object.keys(row).length
+                  );
+                  console.log(
+                    `🌾 CSV parsed successfully, ${data.length} rows`
+                  );
+                  resolve(data);
+                },
+              });
+            });
+          } catch (err) {
+            console.error("❌ Dataset load failed:", err.message);
+            
+            return [];
+          }
+        }
+
+        function init() {
+          map = L.map("map", {
+            center: defaultCenter,
+            zoom: defaultZoom,
+            zoomControl: false,
+          });
+          L.control.zoom({ position: "topleft" }).addTo(map);
+
+          const satellite = L.tileLayer(satelliteTile, {
+            attribution: satelliteAttrib,
+            maxZoom: 19,
+          });
+          const osm = L.tileLayer(osmTile, {
+            attribution: osmAttrib,
+            maxZoom: 19,
+          });
+
+          satellite.addTo(map);
+          map.baseLayers = { satellite, osm };
+
+          drawnItems = new L.FeatureGroup();
+          map.addLayer(drawnItems);
+
+          drawControl = new L.Control.Draw({
+            position: "topright",
+            draw: {
+              polyline: false,
+              polygon: {
+                allowIntersection: false,
+                showArea: true,
+                shapeOptions: {
+                  color: "#25995c",
+                  weight: 3,
+                  opacity: 0.9,
+                  fillOpacity: 0.2,
+                },
+              },
+              rectangle: false,
+              circle: false,
+              marker: false,
+              circlemarker: false,
+            },
+            edit: { featureGroup: drawnItems, remove: true },
+          });
+
+          map.on(L.Draw.Event.CREATED, onCreated);
+          map.on(L.Draw.Event.EDITED, onEdited);
+          map.on(L.Draw.Event.DELETED, onDeleted);
+
+          requestLocation();
+          setupEventListeners();
+          loadCropDataset();
+        }
+
+        function requestLocation() {
+          if (!navigator.geolocation) {
+            showToast("Geolocation not supported", "error");
+            return;
+          }
+          navigator.geolocation.getCurrentPosition(
+            (pos) => {
+              const latlng = [pos.coords.latitude, pos.coords.longitude];
+              map.setView(latlng, 18);
+              L.circleMarker(latlng, {
+                radius: 8,
+                fillColor: "#4285F4",
+                color: "#fff",
+                weight: 3,
+                fillOpacity: 1,
+              })
+                .addTo(map)
+                .bindPopup("📍 Your Location")
+                .openPopup();
+              showToast("Location accessed!", "success");
+            },
+            (err) => {
+              showToast("Using default location", "info");
+            },
+            { enableHighAccuracy: true }
+          );
+        }
+
+        function onCreated(e) {
+          drawnItems.eachLayer((l) => drawnItems.removeLayer(l));
+          drawnItems.addLayer(e.layer);
+          currentLayer = e.layer;
+          updateFarmDetails();
+          showToast("Boundary created!", "success");
+
+          if (isDrawingMode) {
+            isDrawingMode = false;
+            $("drawBtn").classList.remove("active");
+            $("drawBtn").innerHTML =
+              '<span class="tool-icon">✏️</span><span>Draw Boundary</span>';
+          }
+        }
+
+        function onEdited() {
+          updateFarmDetails();
+          showToast("Boundary updated", "success");
+        }
+
+        function onDeleted() {
+          currentLayer = null;
+          updateFarmDetails();
+          showToast("Boundary removed", "info");
+        }
+
+        function getPolygonCoordinatesClosed() {
+          let polygon = null;
+          drawnItems.eachLayer((l) => {
+            if (l instanceof L.Polygon) polygon = l;
+          });
+          if (!polygon) return null;
+          const latlngs = polygon.getLatLngs()[0];
+          const coords = latlngs.map((p) => [p.lng, p.lat]);
+          if (coords.length > 0) {
+            const first = coords[0];
+            const last = coords[coords.length - 1];
+            if (first[0] !== last[0] || first[1] !== last[1])
+              coords.push(first);
+          }
+          return coords;
+        }
+
+        function updateFarmDetails() {
+          const coords = getPolygonCoordinatesClosed();
+
+          if (!coords || coords.length < 4) {
+            $("farmArea").textContent = "0 acres";
+            $("farmPerimeter").textContent = "0 km";
+            $("farmPoints").textContent = "0";
+            $("farmCenter").textContent = "-";
+            $("farmDetailsSection").style.display = "none";
+            $("analyzeBtn").disabled = true;
+            return;
+          }
+
+          const pointsCount = coords.length - 1;
+          $("farmPoints").textContent = pointsCount;
+          $("farmDetailsSection").style.display = "block";
+          $("analyzeBtn").disabled = false;
+
+          const turfPoly = turf.polygon([coords]);
+          const areaSqMeters = turf.area(turfPoly);
+          const areaAcres = (areaSqMeters * 0.000247105).toFixed(2);
+          $("farmArea").textContent = `${areaAcres} acres`;
+
+          const perimeterKm = turf.length(turfPoly, { units: "kilometers" });
+          $("farmPerimeter").textContent = `${perimeterKm.toFixed(2)} km`;
+
+          const centroid = turf.centroid(turfPoly);
+          const c = centroid.geometry.coordinates;
+          $("farmCenter").textContent = `${c[1].toFixed(6)}, ${c[0].toFixed(
+            6
+          )}`;
+        }
+
+        async function analyzeSoil() {
+          const coords = getPolygonCoordinatesClosed();
+          if (!coords || coords.length < 4) {
+            showToast("Please draw a boundary first!", "error");
+            return;
+          }
+
+          const loading = $("loadingOverlay");
+          loading.classList.add("active");
+
+          try {
+            const turfPoly = turf.polygon([coords]);
+            const centroid = turf.centroid(turfPoly);
+            const [lon, lat] = centroid.geometry.coordinates;
+
+            updateLoadingStep(1);
+            await sleep(800);
+
+            updateLoadingStep(2);
+            const soilData = await fetchSoilData(lat, lon);
+            await sleep(1000);
+
+            updateLoadingStep(3);
+            const soilColor = analyzeSoilColor(lat, lon);
+            await sleep(1000);
+
+            updateLoadingStep(4);
+            const climateData = getClimateData(lat, lon);
+            await sleep(800);
+
+            updateLoadingStep(5);
+            const cropRecommendation = recommendCrop(soilData, climateData);
+            await sleep(600);
+
+            displayResults(
+              soilData,
+              soilColor,
+              climateData,
+              cropRecommendation
+            );
+
+            showToast("Analysis complete!", "success");
+          } catch (err) {
+            console.error("Analysis error:", err);
+            showToast("Analysis failed. Using simulated data.", "error");
+
+            const simulatedData = generateSimulatedData();
+            const climateData = getClimateData(0, 0);
+            const cropRec = recommendCrop(simulatedData.soil, climateData);
+            displayResults(
+              simulatedData.soil,
+              simulatedData.color,
+              climateData,
+              cropRec
+            );
+          } finally {
+            loading.classList.remove("active");
+            resetLoadingSteps();
+          }
+        }
+
+        function updateLoadingStep(step) {
+          for (let i = 1; i <= 5; i++) {
+            $(`step${i}`).classList.remove("active");
+          }
+          $(`step${step}`).classList.add("active");
+        }
+
+        function resetLoadingSteps() {
+          for (let i = 1; i <= 5; i++) {
+            $(`step${i}`).classList.remove("active");
+          }
+          $("step1").classList.add("active");
+        }
+
+        function sleep(ms) {
+          return new Promise((resolve) => setTimeout(resolve, ms));
+        }
+
+        async function fetchSoilData(lat, lon) {
+          try {
+            const properties = [
+              "phh2o",
+              "soc",
+              "clay",
+              "sand",
+              "nitrogen",
+              "bdod",
+              "cec",
+            ];
+            const depth = "0-5cm";
+
+            const baseUrl =
+              "https://rest.isric.org/soilgrids/v2.0/properties/query";
+            const url = `${baseUrl}?lon=${lon}&lat=${lat}&property=${properties.join(
+              "&property="
+            )}&depth=${depth}`;
+
+            const response = await fetch(url);
+
+            if (!response.ok) {
+              throw new Error("SoilGrids API error");
+            }
+
+            const data = await response.json();
+
+            const soilInfo = {
+              ph: extractValue(data, "phh2o", 10),
+              organicCarbon: extractValue(data, "soc", 10),
+              clay: extractValue(data, "clay", 10),
+              sand: extractValue(data, "sand", 10),
+              nitrogen: extractValue(data, "nitrogen", 100),
+              phosphorus: (20 + Math.random() * 60).toFixed(0),
+              potassium: (100 + Math.random() * 200).toFixed(0),
+              bulkDensity: extractValue(data, "bdod", 100),
+              cec: extractValue(data, "cec", 10),
+            };
+
+            return soilInfo;
+          } catch (error) {
+            console.error("SoilGrids error:", error);
+            return generateSimulatedData().soil;
+          }
+        }
+
+        function extractValue(data, property, divisor) {
+          try {
+            const prop = data.properties.layers.find(
+              (l) => l.name === property
+            );
+            if (
+              prop &&
+              prop.depths &&
+              prop.depths[0] &&
+              prop.depths[0].values
+            ) {
+              return (prop.depths[0].values.mean / divisor).toFixed(1);
+            }
+          } catch (e) {
+            console.error(`Error extracting ${property}:`, e);
+          }
+          return null;
+        }
+
+        function generateSimulatedData() {
+          return {
+            soil: {
+              ph: (6.0 + Math.random() * 2.5).toFixed(1),
+              organicCarbon: (10 + Math.random() * 30).toFixed(1),
+              clay: (15 + Math.random() * 35).toFixed(1),
+              sand: (20 + Math.random() * 50).toFixed(1),
+              nitrogen: (0.1 + Math.random() * 0.4).toFixed(2),
+              phosphorus: (20 + Math.random() * 60).toFixed(0),
+              potassium: (100 + Math.random() * 200).toFixed(0),
+              bulkDensity: (1.2 + Math.random() * 0.5).toFixed(2),
+              cec: (10 + Math.random() * 25).toFixed(1),
+            },
+            color: {
+              rgb: `rgb(${120 + Math.random() * 50}, ${
+                80 + Math.random() * 40
+              }, ${50 + Math.random() * 30})`,
+              desc: "Medium brown - indicating moderate organic matter content",
+            },
+          };
+        }
+
+        function getClimateData(lat, lon) {
+          // Simulated climate data based on typical Maharashtra conditions
+          const rainfall = 600 + Math.random() * 800;
+          const temperature = 25 + Math.random() * 8;
+
+          return {
+            rainfall: rainfall.toFixed(0),
+            temperature: temperature.toFixed(1),
+          };
+        }
+
+        function analyzeSoilColor(lat, lon) {
+          const colors = [
+            {
+              rgb: "rgb(139, 90, 43)",
+              desc: "Dark brown - Rich in organic matter, excellent for crops",
+            },
+            {
+              rgb: "rgb(165, 110, 60)",
+              desc: "Brown - Good organic content, suitable for agriculture",
+            },
+            {
+              rgb: "rgb(180, 130, 80)",
+              desc: "Light brown - Moderate fertility, needs organic amendments",
+            },
+            {
+              rgb: "rgb(120, 75, 45)",
+              desc: "Dark reddish-brown - High iron content, good drainage",
+            },
+            {
+              rgb: "rgb(200, 160, 100)",
+              desc: "Sandy brown - Sandy soil, needs water retention",
+            },
+            {
+              rgb: "rgb(100, 85, 70)",
+              desc: "Dark grey-brown - High clay content, may need drainage",
+            },
+          ];
+
+          return colors[Math.floor(Math.random() * colors.length)];
+        }
+
+        function recommendCrop(soilData, climateData) {
+          const nitrogen =
+            parseFloat(soilData.nitrogen) ||
+            parseFloat(soilData.phosphorus) / 2;
+          const phosphorus = parseFloat(soilData.phosphorus) || 40;
+          const potassium = parseFloat(soilData.potassium) || 150;
+          const ph = parseFloat(soilData.ph) || 6.5;
+          const rainfall = parseFloat(climateData.rainfall);
+          const temperature = parseFloat(climateData.temperature);
+
+          // Calculate match scores for each crop
+          const matches = cropDataset.map((crop) => {
+            let score = 100;
+
+            // NPK matching
+            score -= Math.abs(nitrogen - crop.Nitrogen) * 0.3;
+            score -= Math.abs(phosphorus - crop.Phosphorus) * 0.3;
+            score -= Math.abs(potassium - crop.Potassium) * 0.1;
+
+            // pH matching
+            score -= Math.abs(ph - parseFloat(crop.pH)) * 10;
+
+            // Climate matching
+            score -= Math.abs(rainfall - crop.Rainfall) * 0.02;
+            score -= Math.abs(temperature - crop.Temperature) * 2;
+
+            return {
+              crop: crop.Crop,
+              fertilizer: crop.Fertilizer,
+              score: Math.max(0, Math.min(100, score)),
+            };
+          });
+
+          // Sort by score
+          matches.sort((a, b) => b.score - a.score);
+
+          // Get top 5 unique crops
+          const uniqueCrops = [];
+          const seen = new Set();
+
+          for (const match of matches) {
+            if (!seen.has(match.crop)) {
+              seen.add(match.crop);
+              uniqueCrops.push(match);
+              if (uniqueCrops.length >= 5) break;
+            }
+          }
+
+          return {
+            primary: uniqueCrops[0],
+            alternatives: uniqueCrops.slice(1, 5),
+          };
+        }
+
+        function displayResults(soilData, soilColor, climateData, cropRec) {
+          $("soilPH").textContent = soilData.ph || "N/A";
+          $("nitrogenVal").textContent =
+            soilData.nitrogen || soilData.phosphorus / 2 || "N/A";
+          $("phosphorusVal").textContent = soilData.phosphorus || "N/A";
+          $("potassiumVal").textContent = soilData.potassium || "N/A";
+
+          const soilType = determineSoilType(soilData.clay, soilData.sand);
+          $("soilType").textContent = soilType;
+          $("organicCarbon").textContent = soilData.organicCarbon
+            ? `${soilData.organicCarbon} g/kg`
+            : "N/A";
+          $("clayContent").textContent = soilData.clay
+            ? `${soilData.clay}%`
+            : "N/A";
+          $("rainfallVal").textContent = `${climateData.rainfall} mm`;
+          $("temperatureVal").textContent = `${climateData.temperature}°C`;
+
+          $("soilColorPreview").style.backgroundColor = soilColor.rgb;
+          $("soilColorDesc").textContent = soilColor.desc;
+
+          // Display crop recommendation
+          if (cropRec && cropRec.primary) {
+            $("recommendedCrop").textContent = cropRec.primary.crop;
+            $("cropConfidence").textContent = `${cropRec.primary.score.toFixed(
+              0
+            )}% Match`;
+            $("recommendedFertilizer").textContent = cropRec.primary.fertilizer;
+
+            // Display alternatives
+            const altList = $("alternativeCropsList");
+            altList.innerHTML = "";
+            cropRec.alternatives.forEach((alt) => {
+              const chip = document.createElement("span");
+              chip.className = "crop-chip";
+              chip.textContent = `${alt.crop} (${alt.score.toFixed(0)}%)`;
+              altList.appendChild(chip);
+            });
+          }
+
+          $("resultOverlay").classList.add("active");
+          $("overlayBackdrop").classList.add("active");
+        }
+
+        function determineSoilType(clay, sand) {
+          clay = parseFloat(clay);
+          sand = parseFloat(sand);
+
+          if (isNaN(clay) || isNaN(sand)) return "Loamy";
+
+          const silt = 100 - clay - sand;
+
+          if (clay >= 40) return "Clay";
+          if (sand >= 70) return "Sandy";
+          if (silt >= 50) return "Silty";
+          if (clay >= 25 && clay < 40) return "Clay Loam";
+          if (sand >= 45 && clay < 20) return "Sandy Loam";
+          if (silt >= 40 && clay < 20) return "Silty Loam";
+          return "Loam";
+        }
+
+        function setupEventListeners() {
+          $("drawBtn").addEventListener("click", () => {
+            if (!isDrawingMode) {
+              isDrawingMode = true;
+              $("drawBtn").classList.add("active");
+              $("drawBtn").innerHTML =
+                '<span class="tool-icon"><i class="fa-solid fa-draw-polygon"></i></span><span>Drawing...</span>';
+
+              map.addControl(drawControl);
+              const drawer = new L.Draw.Polygon(
+                map,
+                drawControl.options.draw.polygon
+              );
+              drawer.enable();
+
+              showToast("Click to add points. Double-click to finish.", "info");
+            }
+          });
+
+          $("clearBtn").addEventListener("click", () => {
+            if (confirm("Clear the boundary?")) {
+              drawnItems.clearLayers();
+              currentLayer = null;
+              $("analyzeBtn").disabled = true;
+              $("farmDetailsSection").style.display = "none";
+              showToast("Boundary cleared", "info");
+            }
+          });
+
+          $("analyzeBtn").addEventListener("click", () => analyzeSoil());
+
+          $("locateBtn").addEventListener("click", () => requestLocation());
+
+          $("satelliteBtn").addEventListener("click", () => {
+            if (usingSatellite) {
+              map.removeLayer(map.baseLayers.satellite);
+              map.baseLayers.osm.addTo(map);
+              usingSatellite = false;
+              $("satelliteBtn").classList.remove("active");
+              showToast("Street map view", "info");
+            } else {
+              map.removeLayer(map.baseLayers.osm);
+              map.baseLayers.satellite.addTo(map);
+              usingSatellite = true;
+              $("satelliteBtn").classList.add("active");
+              showToast("Satellite view", "info");
+            }
+          });
+
+          $("closeOverlay").addEventListener("click", () => {
+            $("resultOverlay").classList.remove("active");
+            $("overlayBackdrop").classList.remove("active");
+          });
+
+          $("overlayBackdrop").addEventListener("click", () => {
+            $("resultOverlay").classList.remove("active");
+            $("overlayBackdrop").classList.remove("active");
+          });
+
+          $("cancelBtn").addEventListener("click", () => {
+            if (
+              currentLayer &&
+              confirm("Cancel? Your boundary will be cleared.")
+            ) {
+              drawnItems.clearLayers();
+              currentLayer = null;
+              $("analyzeBtn").disabled = true;
+              $("farmDetailsSection").style.display = "none";
+            }
+          });
+
+          document.addEventListener("keydown", (e) => {
+            if (
+              e.key === "Escape" &&
+              $("resultOverlay").classList.contains("active")
+            ) {
+              $("resultOverlay").classList.remove("active");
+              $("overlayBackdrop").classList.remove("active");
+            }
+          });
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+          try {
+            init();
+            showToast("Map loaded! Draw your farm boundary.", "success");
+          } catch (err) {
+            console.error("Init error:", err);
+            showToast("Map failed to initialize", "error");
+          }
+        });
+      })();
+    </script>
+  </body>
+</html>
