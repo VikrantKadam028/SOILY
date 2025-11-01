@@ -1,4 +1,4 @@
-# SOILY
+# SOILY - 🌾 Smart Crop Recommendation Using Digital Soil Mapping & Satellite Imagery For Western Maharashtra
 
 <p align="center" style="background-color:white; padding:10px; border-radius:10px;">
   <img src="https://github.com/VikrantKadam028/SOILY/blob/main/Frontend/public/logo1.png?raw=true" alt="Soily Logo" width="40%">
