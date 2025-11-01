@@ -25,8 +25,7 @@ app.use(
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl:
-        process.env.MONGO_URI ||
-        "mongodb+srv://vikrantkk2889:clZRES2qrls0b4n9@cluster0.yqonlou.mongodb.net/soilyFinal",
+        process.env.MONGO_URI,
       touchAfter: 24 * 3600,
     }),
     cookie: {
@@ -40,8 +39,7 @@ app.use(
 
 mongoose
   .connect(
-    process.env.MONGO_URI ||
-      "mongodb+srv://vikrantkk2889:clZRES2qrls0b4n9@cluster0.yqonlou.mongodb.net/soilyFinal",
+    process.env.MONGO_URI,
     {
       useNewUrlParser: true,
       useUnifiedTopology: true,
@@ -558,6 +556,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Soily server running on port ${PORT}`);
   console.log(`🌐 Visit: http://localhost:${PORT}`);
 });
+
 
 
 
