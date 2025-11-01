@@ -132,9 +132,11 @@ app.post("/auth/login", async (req, res) => {
       req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30; // 30 days
     }
 
-  req.session.save(() => {
-    res.redirect("/dashboard");
-  });
+     res.json({
+      success: true,
+      message: "Login successful",
+      redirectUrl: "/dashboard",
+    });
 
   } catch (error) {
     console.error("Login error:", error);
@@ -549,4 +551,5 @@ app.listen(PORT, () => {
   console.log(`🚀 Soily server running on port ${PORT}`);
   console.log(`🌐 Visit: http://localhost:${PORT}`);
 });
+
 
