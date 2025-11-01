@@ -7,6 +7,7 @@ const path = require("path");
 require("dotenv").config();
 
 const app = express();
+app.set('trust proxy', 1);
 
 const Farmer = require("./models/Farmer");
 
@@ -24,13 +25,15 @@ app.use(
     saveUninitialized: false,
     store: MongoStore.create({
       mongoUrl:
-        process.env.MONGO_URI,
+        process.env.MONGO_URI ||
+        "mongodb+srv://vikrantkk2889:clZRES2qrls0b4n9@cluster0.yqonlou.mongodb.net/soilyFinal",
       touchAfter: 24 * 3600,
     }),
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 7,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", 
     },
   })
 );
@@ -80,7 +83,6 @@ app.post("/auth/login", async (req, res) => {
   try {
     const { email, password, remember } = req.body;
 
-    // Validate input
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -88,7 +90,6 @@ app.post("/auth/login", async (req, res) => {
       });
     }
 
-    // Find farmer by email
     const farmer = await Farmer.findOne({ email: email.toLowerCase() });
 
     if (!farmer) {
@@ -99,7 +100,6 @@ app.post("/auth/login", async (req, res) => {
       });
     }
 
-    // Check if account is active
     if (!farmer.isActive) {
       return res.status(403).json({
         success: false,
@@ -107,7 +107,6 @@ app.post("/auth/login", async (req, res) => {
       });
     }
 
-    // Verify password
     const isPasswordValid = await bcrypt.compare(password, farmer.password);
 
     if (!isPasswordValid) {
@@ -118,26 +117,34 @@ app.post("/auth/login", async (req, res) => {
       });
     }
 
-    // Update last login
     farmer.lastLogin = new Date();
     await farmer.save();
 
-    // Set session
+    // Set session data
     req.session.farmerId = farmer._id;
     req.session.farmerName = farmer.fullName;
     req.session.language = farmer.preferredLanguage;
 
-    // Set cookie expiry based on remember me
     if (remember) {
-      req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30; // 30 days
+      req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30;
     }
 
-     res.json({
-      success: true,
-      message: "Login successful",
-      redirectUrl: "/dashboard",
-    });
+    // IMPORTANT: Save session before sending response
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session save error:", err);
+        return res.status(500).json({
+          success: false,
+          message: "Session error occurred",
+        });
+      }
 
+      res.json({
+        success: true,
+        message: "Login successful",
+        redirectUrl: "/dashboard",
+      });
+    });
   } catch (error) {
     console.error("Login error:", error);
     res.status(500).json({
@@ -551,5 +558,6 @@ app.listen(PORT, () => {
   console.log(`🚀 Soily server running on port ${PORT}`);
   console.log(`🌐 Visit: http://localhost:${PORT}`);
 });
+
 
 
