@@ -9,9 +9,16 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "axios": "^1.12.2",
+    "axios": "^1.13.1",
     "bcryptjs": "^3.0.2",
+    "body-parser": "^2.2.0",
     "connect-mongo": "^5.1.0",
-    "google-auth-library": "^10.4.2"
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "google-auth-library": "^10.4.2",
+    "multer": "^2.0.2"
   }
 }
+
