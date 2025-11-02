@@ -9,20 +9,6 @@ require("dotenv").config();
 const app = express();
 app.set('trust proxy', 1);
 
-const twilio = require("twilio");
-const client = new twilio(
-  process.env.TWILIO_ACCOUNT_SID,
-  process.env.TWILIO_AUTH_TOKEN
-);
-client.messages
-  .create({
-    body: "Hello from Soily!",
-    from: "+14506343334", // your Twilio number
-    to: "+917498084512"   // your verified phone number
-  })
-  .then(message => console.log("Sent:", message.sid))
-  .catch(error => console.error("Error:", error));
-
 const Farmer = require("./models/Farmer");
 
 app.use(express.json());
@@ -553,41 +539,6 @@ app.post("/api/analyze-field", isAuthenticated, async (req, res) => {
   }
 });
 
-
-app.post("/sms", express.urlencoded({ extended: false }), async (req, res) => {
-  const incomingMsg = req.body.Body?.toLowerCase();
-  const fromNumber = req.body.From;
-
-  console.log("📩 SMS received from:", fromNumber, "Message:", incomingMsg);
-
-  let reply = "Please send in this format: CROP soilType=<type> location=<city>";
-
-  if (incomingMsg.startsWith("crop")) {
-    // Extract soil type and location
-    const soilMatch = incomingMsg.match(/soiltype=([a-zA-Z]+)/);
-    const locationMatch = incomingMsg.match(/location=([a-zA-Z]+)/);
-
-    if (soilMatch && locationMatch) {
-      const soilType = soilMatch[1];
-      const location = locationMatch[1];
-
-      // Simulated recommendation logic (replace with your real model)
-      let recommendation = "";
-      if (soilType === "loam") recommendation = "Cotton, Soybean";
-      else if (soilType === "clay") recommendation = "Rice, Wheat";
-      else recommendation = "Millet, Pulses";
-
-      reply = `📍 Location: ${location}\n🌱 Soil: ${soilType}\n✅ Recommended Crops: ${recommendation}`;
-    }
-  }
-
-  const twiml = `<Response><Message>${reply}</Message></Response>`;
-  res.type("text/xml").send(twiml);
-});
-
-
-
-    
 // 404 handler
 app.use((req, res) => {
   res.status(404).send("Page not found");
@@ -605,6 +556,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Soily server running on port ${PORT}`);
   console.log(`🌐 Visit: http://localhost:${PORT}`);
 });
+
 
 
 
