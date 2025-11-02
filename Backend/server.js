@@ -9,6 +9,20 @@ require("dotenv").config();
 const app = express();
 app.set('trust proxy', 1);
 
+const twilio = require("twilio");
+const client = new twilio(
+  process.env.TWILIO_ACCOUNT_SID,
+  process.env.TWILIO_AUTH_TOKEN
+);
+client.messages
+  .create({
+    body: "Hello from Soily!",
+    from: "+14506343334", // your Twilio number
+    to: "+917498084512"   // your verified phone number
+  })
+  .then(message => console.log("Sent:", message.sid))
+  .catch(error => console.error("Error:", error));
+
 const Farmer = require("./models/Farmer");
 
 app.use(express.json());
@@ -591,6 +605,7 @@ app.listen(PORT, () => {
   console.log(`🚀 Soily server running on port ${PORT}`);
   console.log(`🌐 Visit: http://localhost:${PORT}`);
 });
+
 
 
 
