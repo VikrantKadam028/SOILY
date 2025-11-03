@@ -9,7 +9,7 @@ const axios = require("axios");
 require("dotenv").config();
 
 const app = express();
-
+app.set('trust proxy', 1);
 // Import Models
 const Farmer = require("./models/Farmer");
 const SoilAnalysis = require("./models/SoilAnalysis");
@@ -42,6 +42,7 @@ app.use(
       maxAge: 1000 * 60 * 60 * 24 * 7,
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // ADD THIS
     },
   })
 );
@@ -101,7 +102,6 @@ app.get("/auth/login", (req, res) => {
   res.render("auth/login", { error: null });
 });
 
-// Login Handler
 app.post("/auth/login", async (req, res) => {
   try {
     const { email, password, remember } = req.body;
@@ -143,6 +143,7 @@ app.post("/auth/login", async (req, res) => {
     farmer.lastLogin = new Date();
     await farmer.save();
 
+    // Set session data
     req.session.farmerId = farmer._id;
     req.session.farmerName = farmer.fullName;
     req.session.language = farmer.preferredLanguage;
@@ -151,10 +152,21 @@ app.post("/auth/login", async (req, res) => {
       req.session.cookie.maxAge = 1000 * 60 * 60 * 24 * 30;
     }
 
-    res.json({
-      success: true,
-      message: "Login successful",
-      redirectUrl: "/dashboard",
+    // IMPORTANT: Save session before sending response
+    req.session.save((err) => {
+      if (err) {
+        console.error("Session save error:", err);
+        return res.status(500).json({
+          success: false,
+          message: "Session error occurred",
+        });
+      }
+
+      res.json({
+        success: true,
+        message: "Login successful",
+        redirectUrl: "/dashboard",
+      });
     });
   } catch (error) {
     console.error("Login error:", error);
