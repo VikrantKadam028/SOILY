@@ -9,7 +9,7 @@ const axios = require("axios");
 require("dotenv").config();
 
 const app = express();
-app.set('trust proxy', 1);
+app.set("trust proxy", 1);
 // Import Models
 const Farmer = require("./models/Farmer");
 const SoilAnalysis = require("./models/SoilAnalysis");
@@ -896,7 +896,6 @@ app.put(
   }
 );
 
-// Archive a Report
 app.put(
   "/api/soil-analysis/report/:id/archive",
   isAuthenticated,
@@ -933,7 +932,6 @@ app.put(
   }
 );
 
-
 app.get("/reports", isAuthenticated, async (req, res) => {
   try {
     const farmer = await Farmer.findById(req.session.farmerId).select(
@@ -954,6 +952,252 @@ app.get("/reports", isAuthenticated, async (req, res) => {
   }
 });
 
+app.get("/api/dashboard/stats", isAuthenticated, async (req, res) => {
+  try {
+    const farmerId = req.session.farmerId;
+
+    // Get farmer data
+    const farmer = await Farmer.findById(farmerId).select("-password");
+
+    // Get soil analysis statistics
+    const soilAnalyses = await SoilAnalysis.find({
+      farmerId,
+      isArchived: false,
+    }).sort({ analysisDate: -1 });
+
+    const stats = await SoilAnalysis.getFarmerStats(farmerId);
+
+    // Calculate soil health score (average fertility rating)
+    let soilHealthScore = "-";
+    if (soilAnalyses.length > 0) {
+      const avgFertility =
+        soilAnalyses.reduce((sum, a) => sum + a.fertilityRating, 0) /
+        soilAnalyses.length;
+      soilHealthScore = Math.round((avgFertility / 10) * 100); // Convert to percentage
+    }
+
+    // Get farm area from farmer's farm size
+    const farmSizeMap = {
+      small: "2",
+      medium: "6",
+      large: "30",
+      xlarge: "100",
+    };
+    const farmArea =
+      stats?.totalAreaAnalyzed || farmSizeMap[farmer.farmSize] || "0";
+
+    res.json({
+      success: true,
+      stats: {
+        farmArea: parseFloat(farmArea),
+        soilHealth: soilHealthScore,
+        activeMaps: soilAnalyses.length,
+        recommendations:
+          soilAnalyses.length > 0
+            ? soilAnalyses[0].cropRecommendation.alternativeCrops.length + 1
+            : 0,
+        totalAnalyses: stats?.totalAnalyses || 0,
+        mostRecommendedCrop: stats?.mostRecommendedCrop || "-",
+        averagepH: stats?.averagepH || "-",
+      },
+    });
+  } catch (error) {
+    console.error("Dashboard stats error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch dashboard stats",
+    });
+  }
+});
+
+// Get Recent Activity
+app.get("/api/dashboard/recent-activity", isAuthenticated, async (req, res) => {
+  try {
+    const farmerId = req.session.farmerId;
+
+    // Get recent soil analyses
+    const recentAnalyses = await SoilAnalysis.find({
+      farmerId,
+      isArchived: false,
+    })
+      .sort({ analysisDate: -1 })
+      .limit(5)
+      .select("analysisDate boundary soilProperties cropRecommendation");
+
+    const activities = recentAnalyses.map((analysis) => {
+      const timeDiff = Date.now() - new Date(analysis.analysisDate).getTime();
+      const daysAgo = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+      let timeText = "";
+      if (daysAgo === 0) {
+        const hoursAgo = Math.floor(timeDiff / (1000 * 60 * 60));
+        timeText =
+          hoursAgo === 0
+            ? "Just now"
+            : `${hoursAgo} hour${hoursAgo > 1 ? "s" : ""} ago`;
+      } else if (daysAgo === 1) {
+        timeText = "Yesterday";
+      } else {
+        timeText = `${daysAgo} days ago`;
+      }
+
+      return {
+        icon: '<i class="fa-solid fa-circle-check" style="color: #ffffff;"></i>',
+        title: "Soil Analysis Completed",
+        desc: `${analysis.boundary.area.toFixed(2)} acres - ${
+          analysis.soilProperties.soilType
+        } soil`,
+        time: timeText,
+        link: `/reports`,
+      };
+    });
+
+    // Add farmer registration as first activity if no analyses
+    if (activities.length === 0) {
+      const farmer = await Farmer.findById(farmerId).select("createdAt");
+      const timeDiff = Date.now() - new Date(farmer.createdAt).getTime();
+      const daysAgo = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+      activities.push({
+        icon: "🌱",
+        title: "Welcome to SOILY!",
+        desc: "Start by creating your first soil analysis",
+        time: `${daysAgo} day${daysAgo !== 1 ? "s" : ""} ago`,
+        link: "/soil-map",
+      });
+    }
+
+    res.json({
+      success: true,
+      activities,
+    });
+  } catch (error) {
+    console.error("Recent activity error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch recent activity",
+    });
+  }
+});
+
+// Get Personalized Recommendations
+app.get("/api/dashboard/recommendations", isAuthenticated, async (req, res) => {
+  try {
+    const farmerId = req.session.farmerId;
+
+    // Get latest soil analysis
+    const latestAnalysis = await SoilAnalysis.findOne({
+      farmerId,
+      isArchived: false,
+    }).sort({ analysisDate: -1 });
+
+    const recommendations = [];
+
+    if (latestAnalysis) {
+      const soil = latestAnalysis.soilProperties;
+      const crop = latestAnalysis.cropRecommendation.primaryCrop;
+
+      // pH recommendation
+      if (soil.pH < 5.5) {
+        recommendations.push({
+          title: "⚠️ Soil pH Too Acidic",
+          desc: `Current pH is ${soil.pH}. Apply lime (calcium carbonate) at 2-3 tons per acre to raise pH to optimal range (6.0-7.0).`,
+        });
+      } else if (soil.pH > 8.0) {
+        recommendations.push({
+          title: "⚠️ Soil pH Too Alkaline",
+          desc: `Current pH is ${soil.pH}. Apply sulfur or gypsum to lower pH. Add organic matter to improve soil structure.`,
+        });
+      } else {
+        recommendations.push({
+          title: "✅ Optimal pH Level",
+          desc: `Your soil pH (${soil.pH}) is in the ideal range. Continue current soil management practices.`,
+        });
+      }
+
+      // NPK recommendation
+      const nStatus =
+        soil.nitrogen < 0.3 ? "low" : soil.nitrogen > 0.7 ? "high" : "optimal";
+      const pStatus =
+        soil.phosphorus < 30
+          ? "low"
+          : soil.phosphorus > 50
+          ? "high"
+          : "optimal";
+      const kStatus =
+        soil.potassium < 120
+          ? "low"
+          : soil.potassium > 200
+          ? "high"
+          : "optimal";
+
+      if (nStatus === "low" || pStatus === "low" || kStatus === "low") {
+        let deficient = [];
+        if (nStatus === "low") deficient.push("Nitrogen");
+        if (pStatus === "low") deficient.push("Phosphorus");
+        if (kStatus === "low") deficient.push("Potassium");
+
+        recommendations.push({
+          title: "💊 Fertilizer Application Needed",
+          desc: `${deficient.join(", ")} levels are low. Apply ${
+            crop.fertilizer
+          } at recommended rates before sowing.`,
+        });
+      } else {
+        recommendations.push({
+          title: "✅ Balanced Nutrient Levels",
+          desc: `NPK levels are well-balanced. Maintain with regular application of ${crop.fertilizer}.`,
+        });
+      }
+
+      // Crop recommendation
+      recommendations.push({
+        title: `🌾 Best Crop: ${crop.name}`,
+        desc: `Based on your soil conditions (pH: ${soil.pH}, ${
+          soil.soilType
+        }), ${crop.name} has ${crop.matchScore.toFixed(
+          0
+        )}% compatibility. Expected yield: High with proper care.`,
+      });
+
+      // Organic matter recommendation
+      if (soil.organicCarbon < 15) {
+        recommendations.push({
+          title: "🌱 Improve Organic Matter",
+          desc: `Current organic carbon is ${soil.organicCarbon} g/kg. Add compost, green manure, or crop residues to improve soil health and water retention.`,
+        });
+      }
+    } else {
+      // No analysis yet - provide general recommendations
+      recommendations.push(
+        {
+          title: "Create Your First Soil Map",
+          desc: "Start by mapping your farm boundaries and analyzing your soil to get personalized recommendations.",
+        },
+        {
+          title: "Upload Lab Results",
+          desc: "If you have soil test results from a laboratory, upload them for more accurate crop recommendations.",
+        },
+        {
+          title: "Explore Crop Database",
+          desc: "Browse through our extensive crop database to learn about different crops suitable for your region.",
+        }
+      );
+    }
+
+    res.json({
+      success: true,
+      recommendations: recommendations.slice(0, 4),
+    });
+  } catch (error) {
+    console.error("Recommendations error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch recommendations",
+    });
+  }
+});
+
 app.use((req, res) => {
   res.status(404).send("Page not found");
 });
@@ -968,5 +1212,4 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Soily server running on port ${PORT}`);
   console.log(`🌐 Visit: http://localhost:${PORT}`);
-
 });
