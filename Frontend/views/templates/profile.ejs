@@ -31,19 +31,21 @@
             background: var(--bg-light);
             color: var(--text-dark);
             line-height: 1.6;
-            padding: 20px;
+            padding: 16px;
+            min-height: 100vh;
         }
 
         .container {
             max-width: 1200px;
             margin: 0 auto;
+            width: 100%;
         }
 
         .header {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 32px;
+            flex-direction: column;
+            gap: 16px;
+            margin-bottom: 24px;
         }
 
         .back-btn {
@@ -56,6 +58,8 @@
             padding: 8px 16px;
             border-radius: 6px;
             transition: background 0.2s;
+            width: fit-content;
+            font-size: 14px;
         }
 
         .back-btn:hover {
@@ -63,50 +67,51 @@
         }
 
         .page-title {
-            font-size: 32px;
+            font-size: 24px;
             font-weight: 700;
             color: var(--text-dark);
         }
 
         .profile-grid {
             display: grid;
-            grid-template-columns: 350px 1fr;
-            gap: 24px;
+            grid-template-columns: 1fr;
+            gap: 20px;
         }
 
         .profile-sidebar {
             background: var(--white);
             border-radius: 12px;
-            padding: 32px;
+            padding: 24px;
             box-shadow: var(--shadow);
             text-align: center;
-            height: fit-content;
         }
 
         .profile-avatar {
-            width: 120px;
-            height: 120px;
+            width: 100px;
+            height: 100px;
             border-radius: 50%;
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             display: flex;
             align-items: center;
             justify-content: center;
             color: white;
-            font-size: 48px;
+            font-size: 40px;
             font-weight: 700;
-            margin: 0 auto 20px;
+            margin: 0 auto 16px;
         }
 
         .profile-name {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 600;
             margin-bottom: 4px;
+            word-break: break-word;
         }
 
         .profile-email {
             color: var(--text-light);
-            font-size: 14px;
+            font-size: 13px;
             margin-bottom: 8px;
+            word-break: break-all;
         }
 
         .profile-badge {
@@ -117,51 +122,52 @@
             border-radius: 20px;
             font-size: 12px;
             font-weight: 600;
-            margin-bottom: 24px;
+            margin-bottom: 20px;
         }
 
         .profile-stats {
             display: grid;
             grid-template-columns: repeat(2, 1fr);
-            gap: 16px;
-            margin-top: 24px;
-            padding-top: 24px;
+            gap: 12px;
+            margin-top: 20px;
+            padding-top: 20px;
             border-top: 1px solid var(--border);
         }
 
         .stat-item {
             text-align: center;
+            padding: 8px;
         }
 
         .stat-value {
-            font-size: 24px;
+            font-size: 20px;
             font-weight: 700;
             color: var(--primary);
         }
 
         .stat-label {
-            font-size: 12px;
+            font-size: 11px;
             color: var(--text-light);
             margin-top: 4px;
         }
 
         .profile-actions {
-            margin-top: 24px;
-            padding-top: 24px;
+            margin-top: 20px;
+            padding-top: 20px;
             border-top: 1px solid var(--border);
         }
 
         .action-link {
-            display: block;
+            display: flex;
+            align-items: center;
+            gap: 12px;
             padding: 12px 16px;
             color: var(--text-dark);
             text-decoration: none;
             border-radius: 8px;
             transition: all 0.2s;
             margin-bottom: 8px;
-            display: flex;
-            align-items: center;
-            gap: 12px;
+            font-size: 14px;
         }
 
         .action-link:hover {
@@ -175,28 +181,37 @@
         .profile-content {
             background: var(--white);
             border-radius: 12px;
-            padding: 32px;
+            padding: 20px;
             box-shadow: var(--shadow);
         }
 
         .tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 32px;
+            gap: 4px;
+            margin-bottom: 24px;
             border-bottom: 2px solid var(--border);
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+        }
+
+        .tabs::-webkit-scrollbar {
+            display: none;
         }
 
         .tab {
-            padding: 12px 24px;
+            padding: 10px 16px;
             background: none;
             border: none;
             color: var(--text-light);
             font-family: 'Poppins', sans-serif;
-            font-size: 15px;
+            font-size: 13px;
             font-weight: 500;
             cursor: pointer;
             position: relative;
             transition: color 0.2s;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .tab.active {
@@ -222,20 +237,20 @@
         }
 
         .form-section {
-            margin-bottom: 32px;
+            margin-bottom: 28px;
         }
 
         .section-title {
-            font-size: 18px;
+            font-size: 16px;
             font-weight: 600;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             color: var(--text-dark);
         }
 
         .form-grid {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+            grid-template-columns: 1fr;
+            gap: 16px;
         }
 
         .form-group {
@@ -248,23 +263,24 @@
 
         .form-group label {
             display: block;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 500;
             color: var(--text-dark);
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
 
         .form-group input,
         .form-group select,
         .form-group textarea {
             width: 100%;
-            padding: 12px 16px;
+            padding: 12px 14px;
             border: 1.5px solid var(--border);
             border-radius: 8px;
             font-family: 'Poppins', sans-serif;
             font-size: 14px;
             outline: none;
             transition: border-color 0.2s;
+            background: var(--white);
         }
 
         .form-group input:focus,
@@ -276,6 +292,7 @@
         .form-group input:disabled {
             background: var(--bg-light);
             cursor: not-allowed;
+            opacity: 0.7;
         }
 
         .form-group textarea {
@@ -285,13 +302,14 @@
 
         .form-actions {
             display: flex;
-            gap: 12px;
-            justify-content: flex-end;
-            margin-top: 24px;
+            flex-direction: column;
+            gap: 10px;
+            margin-top: 20px;
         }
 
         .btn {
-            padding: 12px 24px;
+            width: 100%;
+            padding: 12px 20px;
             border: none;
             border-radius: 8px;
             font-family: 'Poppins', sans-serif;
@@ -299,6 +317,7 @@
             font-weight: 600;
             cursor: pointer;
             transition: all 0.2s;
+            text-align: center;
         }
 
         .btn-primary {
@@ -338,8 +357,8 @@
 
         .info-item {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
+            flex-direction: column;
+            gap: 12px;
             padding: 16px;
             background: var(--bg-light);
             border-radius: 8px;
@@ -347,7 +366,7 @@
         }
 
         .info-label {
-            font-size: 14px;
+            font-size: 13px;
             color: var(--text-light);
             font-weight: 500;
         }
@@ -359,10 +378,11 @@
         }
 
         .alert {
-            padding: 16px;
+            padding: 14px;
             border-radius: 8px;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
             display: none;
+            font-size: 14px;
         }
 
         .alert.show {
@@ -379,25 +399,6 @@
             background: #FEE2E2;
             color: #991B1B;
             border-left: 4px solid var(--danger);
-        }
-
-        /* Responsive */
-        @media (max-width: 768px) {
-            .profile-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .form-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .tabs {
-                overflow-x: auto;
-            }
-
-            .tab {
-                white-space: nowrap;
-            }
         }
 
         .loading-overlay {
@@ -429,6 +430,207 @@
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+        }
+
+        .danger-zone-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .danger-zone-text {
+            flex: 1;
+        }
+
+        .danger-zone-text p {
+            font-size: 12px;
+            color: #991B1B;
+            margin-top: 4px;
+        }
+
+        /* Tablet styles (min-width: 640px) */
+        @media (min-width: 640px) {
+            body {
+                padding: 20px;
+            }
+
+            .header {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+                margin-bottom: 28px;
+            }
+
+            .page-title {
+                font-size: 28px;
+            }
+
+            .profile-avatar {
+                width: 110px;
+                height: 110px;
+                font-size: 44px;
+                margin-bottom: 18px;
+            }
+
+            .profile-name {
+                font-size: 22px;
+            }
+
+            .profile-email {
+                font-size: 14px;
+            }
+
+            .profile-content {
+                padding: 28px;
+            }
+
+            .tab {
+                font-size: 14px;
+                padding: 12px 20px;
+            }
+
+            .section-title {
+                font-size: 17px;
+            }
+
+            .form-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 18px;
+            }
+
+            .form-actions {
+                flex-direction: row;
+                justify-content: flex-end;
+            }
+
+            .btn {
+                width: auto;
+                min-width: 120px;
+            }
+
+            .info-item {
+                flex-direction: row;
+                justify-content: space-between;
+                align-items: center;
+            }
+
+            .danger-zone-content {
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+            }
+        }
+
+        /* Desktop styles (min-width: 1024px) */
+        @media (min-width: 1024px) {
+            .page-title {
+                font-size: 32px;
+            }
+
+            .profile-grid {
+                grid-template-columns: 350px 1fr;
+                gap: 24px;
+            }
+
+            .profile-sidebar {
+                padding: 32px;
+                height: fit-content;
+            }
+
+            .profile-avatar {
+                width: 120px;
+                height: 120px;
+                font-size: 48px;
+                margin-bottom: 20px;
+            }
+
+            .profile-name {
+                font-size: 24px;
+            }
+
+            .profile-stats {
+                gap: 16px;
+                margin-top: 24px;
+                padding-top: 24px;
+            }
+
+            .stat-value {
+                font-size: 24px;
+            }
+
+            .stat-label {
+                font-size: 12px;
+            }
+
+            .profile-actions {
+                margin-top: 24px;
+                padding-top: 24px;
+            }
+
+            .profile-content {
+                padding: 32px;
+            }
+
+            .tabs {
+                gap: 8px;
+                margin-bottom: 32px;
+            }
+
+            .tab {
+                font-size: 15px;
+                padding: 12px 24px;
+            }
+
+            .form-section {
+                margin-bottom: 32px;
+            }
+
+            .section-title {
+                font-size: 18px;
+                margin-bottom: 20px;
+            }
+
+            .form-grid {
+                gap: 20px;
+            }
+
+            .form-actions {
+                gap: 12px;
+                margin-top: 24px;
+            }
+        }
+
+        /* Large desktop (min-width: 1280px) */
+        @media (min-width: 1280px) {
+            body {
+                padding: 24px;
+            }
+        }
+
+        /* Extra small mobile adjustments */
+        @media (max-width: 374px) {
+            .profile-name {
+                font-size: 18px;
+            }
+
+            .page-title {
+                font-size: 22px;
+            }
+
+            .tab {
+                font-size: 12px;
+                padding: 10px 14px;
+            }
+
+            .profile-avatar {
+                width: 90px;
+                height: 90px;
+                font-size: 36px;
+            }
+
+            .stat-value {
+                font-size: 18px;
+            }
         }
     </style>
 </head>
@@ -597,7 +799,7 @@
                                     <input type="password" id="confirmPassword" name="confirmPassword" required minlength="8">
                                 </div>
                             </div>
-                            <p style="font-size: 13px; color: var(--text-light); margin-top: 8px;">
+                            <p style="font-size: 12px; color: var(--text-light); margin-top: 8px;">
                                 Password must be at least 8 characters and include uppercase, lowercase, and numbers.
                             </p>
                         </div>
@@ -608,14 +810,16 @@
                         </div>
                     </form>
 
-                    <div class="form-section" style="margin-top: 40px; padding-top: 40px; border-top: 1px solid var(--border);">
+                    <div class="form-section" style="margin-top: 32px; padding-top: 32px; border-top: 1px solid var(--border);">
                         <h3 class="section-title" style="color: var(--danger);">Danger Zone</h3>
                         <div class="info-item" style="background: #FEE2E2; border-left: 4px solid var(--danger);">
-                            <div>
-                                <div class="info-label" style="color: var(--danger); font-weight: 600;">Delete Account</div>
-                                <p style="font-size: 13px; color: #991B1B; margin-top: 4px;">Once you delete your account, there is no going back.</p>
+                            <div class="danger-zone-content">
+                                <div class="danger-zone-text">
+                                    <div class="info-label" style="color: var(--danger); font-weight: 600;">Delete Account</div>
+                                    <p>Once you delete your account, there is no going back.</p>
+                                </div>
+                                <button class="btn btn-danger" onclick="confirmDeleteAccount()" style="width: auto; min-width: 120px;">Delete Account</button>
                             </div>
-                            <button class="btn btn-danger" onclick="confirmDeleteAccount()">Delete Account</button>
                         </div>
                     </div>
                 </div>
@@ -647,7 +851,6 @@
             }
 
             switchTab(tabName) {
-                // Update tab buttons
                 document.querySelectorAll('.tab').forEach(tab => {
                     tab.classList.remove('active');
                     if (tab.getAttribute('data-tab') === tabName) {
@@ -655,7 +858,6 @@
                     }
                 });
 
-                // Update tab content
                 document.querySelectorAll('.tab-content').forEach(content => {
                     content.classList.remove('active');
                 });
@@ -663,19 +865,16 @@
             }
 
             setupForms() {
-                // Personal Info Form
                 document.getElementById('personalInfoForm').addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.updatePersonalInfo();
                 });
 
-                // Farm Details Form
                 document.getElementById('farmDetailsForm').addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.updateFarmDetails();
                 });
 
-                // Security Form
                 document.getElementById('securityForm').addEventListener('submit', (e) => {
                     e.preventDefault();
                     this.updatePassword();
@@ -701,7 +900,6 @@
             }
 
             populateProfile(farmer) {
-                // Sidebar
                 document.getElementById('profileAvatar').textContent = farmer.fullName.charAt(0).toUpperCase();
                 document.getElementById('profileName').textContent = farmer.fullName;
                 document.getElementById('profileEmail').textContent = farmer.email;
@@ -712,17 +910,13 @@
                 const memberDate = new Date(farmer.createdAt);
                 document.getElementById('memberSince').textContent = memberDate.getFullYear();
 
-                // Personal Info Form
                 document.getElementById('fullName').value = farmer.fullName;
                 document.getElementById('email').value = farmer.email;
                 document.getElementById('phone').value = farmer.phone;
                 document.getElementById('language').value = farmer.preferredLanguage || 'en';
 
-                // Farm Details Form
                 document.getElementById('location').value = farmer.location;
                 document.getElementById('farmSize').value = farmer.farmSize;
-                // if (farmer.soilType) document.getElementById('soilType').value = farmer.soilType;
-                // if (farmer.irrigationType) document.getElementById('irrigationType').value = farmer.irrigationType;
                 if (farmer.notes) document.getElementById('notes').value = farmer.notes;
             }
 
@@ -762,8 +956,6 @@
                 const formData = {
                     location: document.getElementById('location').value.trim(),
                     farmSize: document.getElementById('farmSize').value,
-                    // soilType: document.getElementById('soilType').value,
-                    // irrigationType: document.getElementById('irrigationType').value,
                     notes: document.getElementById('notes').value.trim()
                 };
 
@@ -795,7 +987,6 @@
                 const newPassword = document.getElementById('newPassword').value;
                 const confirmPassword = document.getElementById('confirmPassword').value;
 
-                // Validation
                 if (newPassword !== confirmPassword) {
                     this.showAlert('New passwords do not match!', 'error');
                     return;
@@ -850,7 +1041,6 @@
                     alertContainer.innerHTML = '';
                 }, 5000);
 
-                // Scroll to top
                 window.scrollTo({ top: 0, behavior: 'smooth' });
             }
 
@@ -867,7 +1057,6 @@
         function confirmDeleteAccount() {
             if (confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
                 if (confirm('This will permanently delete all your data. Are you absolutely sure?')) {
-                    // Call delete API
                     fetch('/api/farmer/delete-account', {
                         method: 'DELETE'
                     }).then(() => {
@@ -877,7 +1066,6 @@
             }
         }
 
-        // Initialize
         document.addEventListener('DOMContentLoaded', () => {
             new ProfileManager();
         });
