@@ -366,6 +366,25 @@
         text-decoration: underline;
       }
 
+      .admin-link {
+        text-align: center;
+        font-size: 14px;
+        color: #8792a2;
+        margin-top: 8px;
+      }
+
+      .admin-link a {
+        color: #007236;
+        text-decoration: none;
+        font-weight: 500;
+        transition: color 0.2s ease;
+      }
+
+      .admin-link a:hover {
+        color: #4c44d4;
+        text-decoration: underline;
+      }
+
       /* Error States */
       .error-message {
         color: #f56565;
@@ -620,6 +639,11 @@
         <div class="signup-link">
           <span>Don't have an account? </span>
           <a href="/auth/register">Register here</a>
+        </div>
+
+        <div class="admin-link">
+          <span>Are you admin? </span>
+          <a href="/admin/login">Visit Here</a>
         </div>
 
         <div class="success-message" id="successMessage">
@@ -885,6 +909,9 @@
             // Hide other elements
             const signupLink = document.querySelector(".signup-link");
             if (signupLink) signupLink.style.display = "none";
+
+            const adminLink = document.querySelector(".admin-link");
+            if (adminLink) adminLink.style.display = "none";
 
             // const divider = document.querySelector(".divider");
             // if (divider) divider.style.display = "none";
