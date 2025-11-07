@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Login | SOILY Dashboard</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: "Poppins", sans-serif;
+    }
+
+    body {
+      background: linear-gradient(135deg, #1a73e8, #0a192f);
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      color: #fff;
+    }
+
+    .login-container {
+      background: rgba(255, 255, 255, 0.1);
+      backdrop-filter: blur(15px);
+      border-radius: 20px;
+      padding: 40px 50px;
+      width: 100%;
+      max-width: 400px;
+      text-align: center;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      animation: fadeIn 0.6s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(30px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .login-container h2 {
+      margin-bottom: 25px;
+      font-weight: 600;
+      font-size: 26px;
+      color: #ffffff;
+    }
+
+    .form-group {
+      margin-bottom: 20px;
+      text-align: left;
+    }
+
+    label {
+      font-size: 14px;
+      color: #ddd;
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      margin-top: 8px;
+      border: none;
+      border-radius: 8px;
+      outline: none;
+      background: rgba(255, 255, 255, 0.2);
+      color: #fff;
+      transition: 0.3s;
+    }
+
+    input:focus {
+      background: rgba(255, 255, 255, 0.3);
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: #00c853;
+      color: white;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: 0.3s ease;
+    }
+
+    button:hover {
+      background: #00b248;
+      transform: translateY(-1px);
+    }
+
+    .error-message {
+      margin-top: 15px;
+      color: #ff5252;
+      font-size: 14px;
+      display: none;
+    }
+
+    .footer-text {
+      margin-top: 30px;
+      font-size: 13px;
+      color: #bbb;
+    }
+
+    .spinner {
+      display: none;
+      margin: 10px auto;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-top: 3px solid #00c853;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+  <div class="login-container">
+    <h2>Admin Login</h2>
+    <form id="adminLoginForm">
+      <div class="form-group">
+        <label for="username">Username</label>
+        <input type="text" id="username" name="username" placeholder="Enter username" required />
+      </div>
+
+      <div class="form-group">
+        <label for="password">Password</label>
+        <input type="password" id="password" name="password" placeholder="Enter password" required />
+      </div>
+
+      <button type="submit">Login</button>
+      <div class="spinner" id="spinner"></div>
+      <div class="error-message" id="errorMsg">
+        <%= error ? error : '' %>
+      </div>
+    </form>
+
+    <p class="footer-text">© 2025 SOILY Admin Panel</p>
+  </div>
+
+  <script>
+    const form = document.getElementById("adminLoginForm");
+    const errorMsg = document.getElementById("errorMsg");
+    const spinner = document.getElementById("spinner");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      errorMsg.style.display = "none";
+      spinner.style.display = "block";
+
+      const formData = {
+        username: document.getElementById("username").value.trim(),
+        password: document.getElementById("password").value.trim()
+      };
+
+      try {
+        const res = await fetch("/admin/login", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(formData)
+        });
+
+        const data = await res.json();
+        spinner.style.display = "none";
+
+        if (data.success) {
+          window.location.href = data.redirectUrl;
+        } else {
+          errorMsg.textContent = data.message || "Invalid credentials";
+          errorMsg.style.display = "block";
+        }
+      } catch (err) {
+        spinner.style.display = "none";
+        errorMsg.textContent = "Server error. Please try again.";
+        errorMsg.style.display = "block";
+      }
+    });
+  </script>
+</body>
+</html>
