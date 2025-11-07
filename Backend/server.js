@@ -1198,6 +1198,648 @@ app.get("/api/dashboard/recommendations", isAuthenticated, async (req, res) => {
   }
 });
 
+// ============================================
+// ADMIN ROUTES - Add these to your server.js
+// ============================================
+
+// Admin authentication middleware
+const isAdmin = (req, res, next) => {
+  // Add your admin authentication logic here
+  // For now, checking if user is authenticated and has admin role
+  if (req.session && req.session.isAdmin) {
+    return next();
+  }
+  res.status(403).json({ success: false, message: "Unauthorized access" });
+};
+
+// Admin Login Page
+app.get("/admin/login", (req, res) => {
+  if (req.session.isAdmin) {
+    return res.redirect("/admin/dashboard");
+  }
+  res.render("auth/admin-login", { error: null });
+});
+
+// Admin Login Handler
+app.post("/admin/login", async (req, res) => {
+  try {
+    const { username, password } = req.body;
+
+    if (username === "admin" && password === "soilyofficial") {
+      req.session.isAdmin = true;
+      req.session.adminName = "Administrator";
+
+      req.session.save((err) => {
+        if (err) {
+          console.error("Session save error:", err);
+          return res.status(500).json({
+            success: false,
+            message: "Session error occurred",
+          });
+        }
+
+        res.json({
+          success: true,
+          message: "Login successful",
+          redirectUrl: "/admin/dashboard",
+        });
+      });
+    } else {
+      res.status(401).json({
+        success: false,
+        message: "Invalid credentials",
+      });
+    }
+  } catch (error) {
+    console.error("Admin login error:", error);
+    res.status(500).json({
+      success: false,
+      message: "An error occurred during login",
+    });
+  }
+});
+
+// Admin Dashboard Page
+app.get("/admin/dashboard", isAdmin, (req, res) => {
+  res.render("templates/soilyadmin", {
+    adminName: req.session.adminName || "Administrator",
+  });
+});
+
+// Get all farmers with analysis count
+app.get("/api/admin/farmers", isAdmin, async (req, res) => {
+  try {
+    const farmers = await Farmer.find()
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .lean();
+
+    // Get analysis count for each farmer
+    const farmersWithCount = await Promise.all(
+      farmers.map(async (farmer) => {
+        const analysisCount = await SoilAnalysis.countDocuments({
+          farmerId: farmer._id,
+        });
+        return {
+          ...farmer,
+          analysisCount,
+        };
+      })
+    );
+
+    res.json({
+      success: true,
+      farmers: farmersWithCount,
+    });
+  } catch (error) {
+    console.error("Fetch farmers error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch farmers",
+    });
+  }
+});
+
+// Get all soil analyses with farmer names
+app.get("/api/admin/analyses", isAdmin, async (req, res) => {
+  try {
+    const analyses = await SoilAnalysis.find()
+      .sort({ analysisDate: -1 })
+      .populate("farmerId", "fullName email")
+      .lean();
+
+    const analysesWithFarmer = analyses.map((analysis) => ({
+      ...analysis,
+      farmerName: analysis.farmerId?.fullName || "Unknown",
+      farmerEmail: analysis.farmerId?.email || "N/A",
+    }));
+
+    res.json({
+      success: true,
+      analyses: analysesWithFarmer,
+    });
+  } catch (error) {
+    console.error("Fetch analyses error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch analyses",
+    });
+  }
+});
+
+// Get comprehensive statistics for admin dashboard
+app.get("/api/admin/statistics", isAdmin, async (req, res) => {
+  try {
+    // Total farmers
+    const totalFarmers = await Farmer.countDocuments();
+    const activeFarmers = await Farmer.countDocuments({ isActive: true });
+
+    // Total analyses
+    const totalAnalyses = await SoilAnalysis.countDocuments();
+    const archivedReports = await SoilAnalysis.countDocuments({
+      isArchived: true,
+    });
+
+    // Total area analyzed
+    const areaResult = await SoilAnalysis.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalArea: { $sum: "$boundary.area" },
+        },
+      },
+    ]);
+    const totalArea = areaResult[0]?.totalArea || 0;
+
+    // Farm size distribution
+    const farmSizeDistribution = await Farmer.aggregate([
+      {
+        $group: {
+          _id: "$farmSize",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Soil type distribution
+    const soilTypeDistribution = await SoilAnalysis.aggregate([
+      {
+        $group: {
+          _id: "$soilProperties.soilType",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Registration trend (last 6 months)
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+
+    const registrationTrend = await Farmer.aggregate([
+      {
+        $match: {
+          createdAt: { $gte: sixMonthsAgo },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$createdAt" },
+            month: { $month: "$createdAt" },
+          },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
+      {
+        $project: {
+          month: {
+            $concat: [
+              {
+                $arrayElemAt: [
+                  [
+                    "",
+                    "Jan",
+                    "Feb",
+                    "Mar",
+                    "Apr",
+                    "May",
+                    "Jun",
+                    "Jul",
+                    "Aug",
+                    "Sep",
+                    "Oct",
+                    "Nov",
+                    "Dec",
+                  ],
+                  "$_id.month",
+                ],
+              },
+              " ",
+              { $toString: "$_id.year" },
+            ],
+          },
+          count: 1,
+        },
+      },
+    ]);
+
+    // Top recommended crops
+    const topCrops = await SoilAnalysis.aggregate([
+      {
+        $group: {
+          _id: "$cropRecommendation.primaryCrop.name",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 8 },
+      {
+        $project: {
+          crop: "$_id",
+          count: 1,
+          _id: 0,
+        },
+      },
+    ]);
+
+    // Average pH by region
+    const phByRegion = await SoilAnalysis.aggregate([
+      {
+        $lookup: {
+          from: "farmers",
+          localField: "farmerId",
+          foreignField: "_id",
+          as: "farmer",
+        },
+      },
+      { $unwind: "$farmer" },
+      {
+        $group: {
+          _id: "$farmer.location",
+          avgPh: { $avg: "$soilProperties.pH" },
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+      { $limit: 10 },
+      {
+        $project: {
+          location: "$_id",
+          avgPh: { $round: ["$avgPh", 2] },
+          _id: 0,
+        },
+      },
+    ]);
+
+    // NPK averages
+    const npkResult = await SoilAnalysis.aggregate([
+      {
+        $group: {
+          _id: null,
+          nitrogen: { $avg: "$soilProperties.nitrogen" },
+          phosphorus: { $avg: "$soilProperties.phosphorus" },
+          potassium: { $avg: "$soilProperties.potassium" },
+          organicCarbon: { $avg: "$soilProperties.organicCarbon" },
+        },
+      },
+    ]);
+    const npkAverages = npkResult[0] || {
+      nitrogen: 0,
+      phosphorus: 0,
+      potassium: 0,
+      organicCarbon: 0,
+    };
+
+    // Seasonal data
+    const seasonalData = await SoilAnalysis.aggregate([
+      {
+        $group: {
+          _id: "$season",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+      {
+        $project: {
+          season: "$_id",
+          count: 1,
+          _id: 0,
+        },
+      },
+    ]);
+
+    // Soil health distribution
+    const soilHealthDistribution = await SoilAnalysis.aggregate([
+      {
+        $group: {
+          _id: "$soilHealth",
+          count: { $sum: 1 },
+        },
+      },
+      { $sort: { count: -1 } },
+    ]);
+
+    // Download and view statistics
+    const downloadStats = await SoilAnalysis.aggregate([
+      {
+        $group: {
+          _id: null,
+          totalDownloads: { $sum: "$downloadCount" },
+          totalViews: {
+            $sum: { $cond: ["$reportViewed", 1, 0] },
+          },
+        },
+      },
+    ]);
+
+    res.json({
+      success: true,
+      stats: {
+        totalFarmers,
+        activeFarmers,
+        totalAnalyses,
+        totalArea: totalArea.toFixed(2),
+        archivedReports,
+        totalDownloads: downloadStats[0]?.totalDownloads || 0,
+        totalViews: downloadStats[0]?.totalViews || 0,
+        farmSizeDistribution,
+        soilTypeDistribution,
+        registrationTrend,
+        topCrops,
+        phByRegion,
+        npkAverages,
+        seasonalData,
+        soilHealthDistribution,
+      },
+    });
+  } catch (error) {
+    console.error("Statistics error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch statistics",
+    });
+  }
+});
+
+// Get single farmer details with all analyses
+app.get("/api/admin/farmer/:id", isAdmin, async (req, res) => {
+  try {
+    const farmer = await Farmer.findById(req.params.id)
+      .select("-password")
+      .lean();
+
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not found",
+      });
+    }
+
+    const analysisCount = await SoilAnalysis.countDocuments({
+      farmerId: farmer._id,
+    });
+
+    res.json({
+      success: true,
+      farmer,
+      analysisCount,
+    });
+  } catch (error) {
+    console.error("Fetch farmer error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch farmer details",
+    });
+  }
+});
+
+// Get single analysis details with farmer info
+app.get("/api/admin/analysis/:id", isAdmin, async (req, res) => {
+  try {
+    const analysis = await SoilAnalysis.findById(req.params.id)
+      .populate("farmerId", "fullName email phone location")
+      .lean();
+
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      analysis: {
+        ...analysis,
+        farmerName: analysis.farmerId?.fullName || "Unknown",
+        farmerEmail: analysis.farmerId?.email || "N/A",
+      },
+    });
+  } catch (error) {
+    console.error("Fetch analysis error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to fetch analysis details",
+    });
+  }
+});
+
+// Delete farmer (and all their analyses)
+app.delete("/api/admin/farmer/:id", isAdmin, async (req, res) => {
+  try {
+    const farmer = await Farmer.findByIdAndDelete(req.params.id);
+
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not found",
+      });
+    }
+
+    // Delete all analyses for this farmer
+    await SoilAnalysis.deleteMany({ farmerId: req.params.id });
+
+    res.json({
+      success: true,
+      message: "Farmer and all associated data deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete farmer error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete farmer",
+    });
+  }
+});
+
+// Delete analysis
+app.delete("/api/admin/analysis/:id", isAdmin, async (req, res) => {
+  try {
+    const analysis = await SoilAnalysis.findByIdAndDelete(req.params.id);
+
+    if (!analysis) {
+      return res.status(404).json({
+        success: false,
+        message: "Analysis not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Analysis deleted successfully",
+    });
+  } catch (error) {
+    console.error("Delete analysis error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete analysis",
+    });
+  }
+});
+
+// Update farmer details
+app.put("/api/admin/farmer/:id", isAdmin, async (req, res) => {
+  try {
+    const { fullName, email, phone, location, farmSize, isActive, notes } =
+      req.body;
+
+    const updatedFarmer = await Farmer.findByIdAndUpdate(
+      req.params.id,
+      { fullName, email, phone, location, farmSize, isActive, notes },
+      { new: true, runValidators: true }
+    ).select("-password");
+
+    if (!updatedFarmer) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not found",
+      });
+    }
+
+    res.json({
+      success: true,
+      message: "Farmer updated successfully",
+      farmer: updatedFarmer,
+    });
+  } catch (error) {
+    console.error("Update farmer error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to update farmer",
+    });
+  }
+});
+
+// Generate comprehensive system report
+app.get("/api/admin/generate-report", isAdmin, async (req, res) => {
+  try {
+    const farmers = await Farmer.find().select("-password").lean();
+    const analyses = await SoilAnalysis.find()
+      .populate("farmerId", "fullName email")
+      .lean();
+
+    // Generate PDF report (you'll need to implement this using pdfGenerator)
+    const reportData = {
+      generatedAt: new Date(),
+      totalFarmers: farmers.length,
+      totalAnalyses: analyses.length,
+      farmers,
+      analyses,
+    };
+
+    // For now, return JSON. Implement PDF generation similar to other reports
+    res.json({
+      success: true,
+      report: reportData,
+    });
+  } catch (error) {
+    console.error("Generate report error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to generate report",
+    });
+  }
+});
+
+// Toggle farmer active status
+app.patch("/api/admin/farmer/:id/toggle-status", isAdmin, async (req, res) => {
+  try {
+    const farmer = await Farmer.findById(req.params.id);
+
+    if (!farmer) {
+      return res.status(404).json({
+        success: false,
+        message: "Farmer not found",
+      });
+    }
+
+    farmer.isActive = !farmer.isActive;
+    await farmer.save();
+
+    res.json({
+      success: true,
+      message: `Farmer ${
+        farmer.isActive ? "activated" : "deactivated"
+      } successfully`,
+      isActive: farmer.isActive,
+    });
+  } catch (error) {
+    console.error("Toggle status error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to toggle farmer status",
+    });
+  }
+});
+
+// Admin Logout
+app.get("/admin/logout", (req, res) => {
+  req.session.destroy((err) => {
+    if (err) {
+      console.error("Admin logout error:", err);
+    }
+    res.redirect("/admin/login");
+  });
+});
+
+// Bulk operations
+app.post("/api/admin/bulk-delete-farmers", isAdmin, async (req, res) => {
+  try {
+    const { farmerIds } = req.body;
+
+    if (!farmerIds || !Array.isArray(farmerIds)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid farmer IDs",
+      });
+    }
+
+    // Delete farmers and their analyses
+    await Farmer.deleteMany({ _id: { $in: farmerIds } });
+    await SoilAnalysis.deleteMany({ farmerId: { $in: farmerIds } });
+
+    res.json({
+      success: true,
+      message: `${farmerIds.length} farmers and their data deleted successfully`,
+    });
+  } catch (error) {
+    console.error("Bulk delete error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete farmers",
+    });
+  }
+});
+
+app.post("/api/admin/bulk-delete-analyses", isAdmin, async (req, res) => {
+  try {
+    const { analysisIds } = req.body;
+
+    if (!analysisIds || !Array.isArray(analysisIds)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid analysis IDs",
+      });
+    }
+
+    await SoilAnalysis.deleteMany({ _id: { $in: analysisIds } });
+
+    res.json({
+      success: true,
+      message: `${analysisIds.length} analyses deleted successfully`,
+    });
+  } catch (error) {
+    console.error("Bulk delete error:", error);
+    res.status(500).json({
+      success: false,
+      message: "Failed to delete analyses",
+    });
+  }
+});
+
 app.use((req, res) => {
   res.status(404).send("Page not found");
 });
