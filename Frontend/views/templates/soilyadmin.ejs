@@ -1,0 +1,2381 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SOILY Admin Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <link
+      href="https://fonts.googleapis.com/css2?family=Audiowide&family=Poppins:wght@100;200;300;400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: poppins;
+      }
+
+      :root {
+        --primary: #10b981;
+        --primary-dark: #059669;
+        --secondary: #3b82f6;
+        --danger: #ef4444;
+        --warning: #f59e0b;
+        --success: #22c55e;
+        --dark: #1f2937;
+        --dark-light: #374151;
+        --gray: #6b7280;
+        --gray-light: #f3f4f6;
+        --white: #ffffff;
+        --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+        --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+      }
+
+      body {
+        font-family: "Poppins", sans-serif;
+        /* background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
+        background-color: whitesmoke;
+        min-height: 100vh;
+        color: var(--dark);
+      }
+
+      .dashboard-container {
+        display: flex;
+        min-height: 100vh;
+      }
+
+      /* Sidebar */
+      .sidebar {
+        width: 280px;
+        background: var(--white);
+        box-shadow: var(--shadow-lg);
+        position: fixed;
+        height: 100vh;
+        overflow-y: auto;
+        transition: all 0.3s ease;
+        z-index: 1000;
+      }
+
+      .sidebar.collapsed {
+        width: 80px;
+      }
+
+      .sidebar-header {
+        padding: 25px 20px;
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+        color: var(--white);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .sidebar-header h1 {
+        font-size: 24px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .sidebar.collapsed .sidebar-header h1 span {
+        display: none;
+      }
+
+      .toggle-btn {
+        background: none;
+        border: none;
+        color: var(--white);
+        font-size: 20px;
+        cursor: pointer;
+        transition: transform 0.3s ease;
+      }
+
+      .toggle-btn:hover {
+        transform: rotate(180deg);
+      }
+
+      .sidebar-menu {
+        padding: 20px 0;
+      }
+
+      .menu-item {
+        padding: 15px 25px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        color: var(--dark);
+        text-decoration: none;
+        transition: all 0.3s ease;
+        cursor: pointer;
+        border-left: 4px solid transparent;
+      }
+
+      .menu-item:hover,
+      .menu-item.active {
+        background: var(--gray-light);
+        border-left-color: var(--primary);
+        color: var(--primary);
+      }
+
+      .menu-item i {
+        font-size: 20px;
+        width: 24px;
+        text-align: center;
+      }
+
+      .sidebar.collapsed .menu-item span {
+        display: none;
+      }
+
+      /* Main Content */
+      .main-content {
+        flex: 1;
+        margin-left: 280px;
+        transition: margin-left 0.3s ease;
+        padding: 30px;
+      }
+
+      .sidebar.collapsed ~ .main-content {
+        margin-left: 80px;
+      }
+
+      /* Top Bar */
+      .top-bar {
+        background: var(--white);
+        padding: 20px 30px;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        margin-bottom: 30px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 20px;
+        animation: slideDown 0.5s ease;
+      }
+
+      @keyframes slideDown {
+        from {
+          opacity: 0;
+          transform: translateY(-20px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      .search-box {
+        flex: 1;
+        max-width: 400px;
+        position: relative;
+      }
+
+      .search-box input {
+        width: 100%;
+        padding: 12px 45px 12px 20px;
+        border: 2px solid var(--gray-light);
+        border-radius: 10px;
+        font-family: "Poppins", sans-serif;
+        font-size: 14px;
+        transition: all 0.3s ease;
+      }
+
+      .search-box input:focus {
+        outline: none;
+        border-color: var(--primary);
+      }
+
+      .search-box i {
+        position: absolute;
+        right: 15px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: var(--gray);
+      }
+
+      .user-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+      }
+
+      .user-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--secondary) 100%
+        );
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--white);
+        font-weight: 600;
+        font-size: 18px;
+      }
+
+      .logout-btn {
+        padding: 10px 20px;
+        background: var(--danger);
+        color: var(--white);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: "Poppins", sans-serif;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+
+      .logout-btn:hover {
+        background: #dc2626;
+        transform: translateY(-2px);
+      }
+
+      /* Stats Cards */
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+
+      .stat-card {
+        background: var(--white);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        transition: all 0.3s ease;
+        animation: fadeIn 0.5s ease;
+        position: relative;
+        overflow: hidden;
+      }
+
+      @keyframes fadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.9);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
+      }
+
+      .stat-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 4px;
+        height: 100%;
+        background: var(--primary);
+        transition: width 0.3s ease;
+      }
+
+      .stat-card:hover {
+        transform: translateY(-5px);
+        box-shadow: var(--shadow-lg);
+      }
+
+      .stat-card:hover::before {
+        width: 100%;
+        opacity: 0.05;
+      }
+
+      .stat-icon {
+        width: 60px;
+        height: 60px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 28px;
+        color: var(--white);
+      }
+
+      .stat-icon.primary {
+        background: linear-gradient(
+          135deg,
+          var(--primary) 0%,
+          var(--primary-dark) 100%
+        );
+      }
+      .stat-icon.secondary {
+        background: linear-gradient(135deg, var(--secondary) 0%, #2563eb 100%);
+      }
+      .stat-icon.warning {
+        background: linear-gradient(135deg, var(--warning) 0%, #d97706 100%);
+      }
+      .stat-icon.success {
+        background: linear-gradient(135deg, var(--success) 0%, #16a34a 100%);
+      }
+
+      .stat-info h3 {
+        font-size: 28px;
+        font-weight: 700;
+        color: var(--dark);
+        margin-bottom: 5px;
+      }
+
+      .stat-info p {
+        color: var(--gray);
+        font-size: 14px;
+        font-weight: 500;
+      }
+
+      /* Charts Section */
+      .charts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+        gap: 25px;
+        margin-bottom: 30px;
+      }
+
+      .chart-card {
+        background: var(--white);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        animation: fadeIn 0.6s ease;
+      }
+
+      .chart-card h3 {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 20px;
+        color: var(--dark);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      .chart-container {
+        position: relative;
+        height: 300px;
+      }
+
+      /* Data Tables */
+      .data-table-container {
+        background: var(--white);
+        padding: 25px;
+        border-radius: 15px;
+        box-shadow: var(--shadow);
+        animation: fadeIn 0.7s ease;
+        overflow-x: auto;
+      }
+
+      .table-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        gap: 15px;
+      }
+
+      .table-header h3 {
+        font-size: 20px;
+        font-weight: 600;
+        color: var(--dark);
+      }
+
+      .table-actions {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+      }
+
+      .filter-btn,
+      .export-btn {
+        padding: 10px 20px;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-family: "Poppins", sans-serif;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+      }
+
+      .filter-btn {
+        background: var(--gray-light);
+        color: var(--dark);
+      }
+
+      .filter-btn:hover {
+        background: #e5e7eb;
+      }
+
+      .export-btn {
+        background: var(--primary);
+        color: var(--white);
+      }
+
+      .export-btn:hover {
+        background: var(--primary-dark);
+        transform: translateY(-2px);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      thead {
+        background: var(--gray-light);
+      }
+
+      th {
+        padding: 15px;
+        text-align: left;
+        font-weight: 600;
+        color: var(--dark);
+        font-size: 14px;
+        white-space: nowrap;
+      }
+
+      td {
+        padding: 15px;
+        border-bottom: 1px solid var(--gray-light);
+        font-size: 14px;
+      }
+
+      tbody tr {
+        transition: all 0.3s ease;
+      }
+
+      tbody tr:hover {
+        background: var(--gray-light);
+      }
+
+      .badge {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 500;
+        display: inline-block;
+      }
+
+      .badge.active {
+        background: #d1fae5;
+        color: #065f46;
+      }
+
+      .badge.inactive {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .badge.small {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+      .badge.medium {
+        background: #fef3c7;
+        color: #92400e;
+      }
+      .badge.large {
+        background: #e0e7ff;
+        color: #3730a3;
+      }
+      .badge.xlarge {
+        background: #fce7f3;
+        color: #831843;
+      }
+
+      .action-btns {
+        display: flex;
+        gap: 8px;
+      }
+
+      .action-btn {
+        width: 32px;
+        height: 32px;
+        border: none;
+        border-radius: 6px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: all 0.3s ease;
+        font-size: 14px;
+      }
+
+      .action-btn.view {
+        background: #dbeafe;
+        color: #1e40af;
+      }
+
+      .action-btn.edit {
+        background: #fef3c7;
+        color: #92400e;
+      }
+
+      .action-btn.delete {
+        background: #fee2e2;
+        color: #991b1b;
+      }
+
+      .action-btn:hover {
+        transform: scale(1.1);
+      }
+
+      /* Modal */
+      .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 2000;
+        align-items: center;
+        justify-content: center;
+        animation: fadeIn 0.3s ease;
+      }
+
+      .modal.active {
+        display: flex;
+      }
+
+      .modal-content {
+        background: var(--white);
+        padding: 30px;
+        border-radius: 15px;
+        max-width: 600px;
+        width: 90%;
+        max-height: 80vh;
+        overflow-y: auto;
+        animation: slideDown 0.3s ease;
+      }
+
+      .modal-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+      }
+
+      .modal-header h2 {
+        font-size: 22px;
+        font-weight: 600;
+        color: var(--dark);
+      }
+
+      .close-modal {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: var(--gray);
+        transition: all 0.3s ease;
+      }
+
+      .close-modal:hover {
+        color: var(--danger);
+        transform: rotate(90deg);
+      }
+
+      .modal-body {
+        margin-bottom: 20px;
+      }
+
+      .info-row {
+        display: flex;
+        padding: 12px 0;
+        border-bottom: 1px solid var(--gray-light);
+      }
+
+      .info-label {
+        font-weight: 600;
+        color: var(--gray);
+        width: 150px;
+      }
+
+      .info-value {
+        color: var(--dark);
+        flex: 1;
+      }
+
+      /* Tab Content */
+      .tab-content {
+        display: none;
+      }
+
+      .tab-content.active {
+        display: block;
+      }
+
+      /* Responsive */
+      @media (max-width: 1024px) {
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      @media (max-width: 768px) {
+        .sidebar {
+          transform: translateX(-100%);
+        }
+
+        .sidebar.open {
+          transform: translateX(0);
+        }
+
+        .main-content {
+          margin-left: 0;
+        }
+
+        .stats-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .mobile-menu-btn {
+          display: block;
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          background: var(--primary);
+          color: var(--white);
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          box-shadow: var(--shadow-lg);
+          z-index: 999;
+        }
+
+        table {
+          font-size: 12px;
+        }
+
+        th,
+        td {
+          padding: 10px 8px;
+        }
+      }
+
+      .loading {
+        text-align: center;
+        padding: 40px;
+        font-size: 18px;
+        color: var(--gray);
+      }
+
+      .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: var(--gray);
+      }
+
+      .empty-state i {
+        font-size: 64px;
+        margin-bottom: 20px;
+        opacity: 0.5;
+      }
+
+      /* ===== RESPONSIVE STYLES ===== */
+
+      /* Tablet and smaller devices */
+      @media (max-width: 1024px) {
+        .charts-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .stats-grid {
+          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
+      }
+
+      /* Mobile devices */
+      @media (max-width: 768px) {
+        /* Sidebar - Hidden by default on mobile */
+        .sidebar {
+          transform: translateX(-100%);
+          width: 280px;
+          z-index: 2000;
+        }
+
+        .sidebar.open {
+          transform: translateX(0);
+        }
+
+        /* Remove collapsed state on mobile */
+        .sidebar.collapsed {
+          width: 280px;
+          transform: translateX(-100%);
+        }
+
+        .sidebar.collapsed.open {
+          transform: translateX(0);
+        }
+
+        /* Show all text in mobile sidebar */
+        .sidebar.collapsed .sidebar-header h1 span,
+        .sidebar.collapsed .menu-item span {
+          display: inline;
+        }
+
+        /* Overlay when sidebar is open */
+        .sidebar-overlay {
+          display: none;
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100%;
+          height: 100%;
+          background: rgba(0, 0, 0, 0.5);
+          z-index: 1999;
+        }
+
+        .sidebar-overlay.active {
+          display: block;
+        }
+
+        /* Main content - full width on mobile */
+        .main-content {
+          margin-left: 0;
+          padding: 15px;
+          width: 100%;
+        }
+
+        .sidebar.collapsed ~ .main-content {
+          margin-left: 0;
+        }
+
+        /* Top bar adjustments */
+        .top-bar {
+          padding: 15px;
+          flex-direction: column;
+          align-items: stretch;
+        }
+
+        .search-box {
+          max-width: 100%;
+          order: 2;
+          margin-top: 10px;
+        }
+
+        .user-info {
+          order: 1;
+          justify-content: space-between;
+          width: 100%;
+        }
+
+        /* Stats grid - single column */
+        .stats-grid {
+          grid-template-columns: 1fr;
+          gap: 15px;
+        }
+
+        .stat-card {
+          padding: 20px;
+        }
+
+        .stat-icon {
+          width: 50px;
+          height: 50px;
+          font-size: 24px;
+        }
+
+        .stat-info h3 {
+          font-size: 24px;
+        }
+
+        /* Charts - single column */
+        .charts-grid {
+          grid-template-columns: 1fr;
+          gap: 20px;
+        }
+
+        .chart-card {
+          padding: 20px;
+        }
+
+        .chart-card h3 {
+          font-size: 16px;
+        }
+
+        .chart-container {
+          height: 250px;
+        }
+
+        /* Tables - scrollable */
+        .data-table-container {
+          padding: 15px;
+          overflow-x: auto;
+        }
+
+        table {
+          font-size: 12px;
+          min-width: 800px;
+        }
+
+        th,
+        td {
+          padding: 10px 8px;
+          white-space: nowrap;
+        }
+
+        .table-header {
+          flex-direction: column;
+          align-items: flex-start;
+        }
+
+        .table-actions {
+          width: 100%;
+          justify-content: flex-start;
+          margin-top: 10px;
+        }
+
+        .filter-btn,
+        .export-btn {
+          font-size: 13px;
+          padding: 8px 15px;
+        }
+
+        /* Action buttons */
+        .action-btn {
+          width: 28px;
+          height: 28px;
+          font-size: 12px;
+        }
+
+        /* Modal adjustments */
+        .modal-content {
+          width: 95%;
+          max-height: 90vh;
+          padding: 20px;
+        }
+
+        .modal-header h2 {
+          font-size: 18px;
+        }
+
+        .info-row {
+          flex-direction: column;
+          gap: 5px;
+        }
+
+        .info-label {
+          width: 100%;
+          font-weight: 600;
+        }
+
+        .info-value {
+          width: 100%;
+        }
+
+        /* Mobile menu button */
+        .mobile-menu-btn {
+          display: flex !important;
+          position: fixed;
+          bottom: 20px;
+          right: 20px;
+          width: 60px;
+          height: 60px;
+          border-radius: 50%;
+          background: linear-gradient(
+            135deg,
+            var(--primary) 0%,
+            var(--primary-dark) 100%
+          );
+          color: var(--white);
+          border: none;
+          font-size: 24px;
+          cursor: pointer;
+          box-shadow: var(--shadow-lg);
+          z-index: 1998;
+          align-items: center;
+          justify-content: center;
+          transition: all 0.3s ease;
+        }
+
+        .mobile-menu-btn:active {
+          transform: scale(0.95);
+        }
+
+        /* Logout button */
+        .logout-btn {
+          padding: 8px 15px;
+          font-size: 13px;
+        }
+
+        .logout-btn span {
+          display: none;
+        }
+
+        /* User avatar */
+        .user-avatar {
+          width: 40px;
+          height: 40px;
+          font-size: 16px;
+        }
+
+        /* Badges */
+        .badge {
+          font-size: 11px;
+          padding: 4px 10px;
+        }
+      }
+
+      /* Extra small devices */
+      @media (max-width: 480px) {
+        .main-content {
+          padding: 10px;
+        }
+
+        .top-bar {
+          padding: 12px;
+        }
+
+        .stat-card {
+          padding: 15px;
+          gap: 15px;
+        }
+
+        .stat-icon {
+          width: 45px;
+          height: 45px;
+          font-size: 20px;
+        }
+
+        .stat-info h3 {
+          font-size: 20px;
+        }
+
+        .stat-info p {
+          font-size: 12px;
+        }
+
+        .chart-container {
+          height: 220px;
+        }
+
+        .chart-card {
+          padding: 15px;
+        }
+
+        .data-table-container {
+          padding: 12px;
+        }
+
+        table {
+          font-size: 11px;
+        }
+
+        th,
+        td {
+          padding: 8px 6px;
+        }
+
+        .filter-btn,
+        .export-btn {
+          font-size: 12px;
+          padding: 7px 12px;
+        }
+
+        .mobile-menu-btn {
+          width: 55px;
+          height: 55px;
+          font-size: 22px;
+          bottom: 15px;
+          right: 15px;
+        }
+
+        .modal-content {
+          padding: 15px;
+        }
+
+        .sidebar-header {
+          padding: 20px 15px;
+        }
+
+        .sidebar-header h1 {
+          font-size: 20px;
+        }
+
+        .menu-item {
+          padding: 12px 20px;
+          font-size: 14px;
+        }
+      }
+
+      /* Landscape orientation on mobile */
+      @media (max-width: 768px) and (orientation: landscape) {
+        .chart-container {
+          height: 200px;
+        }
+
+        .modal-content {
+          max-height: 85vh;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="dashboard-container">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h1>
+            <i class="fas fa-leaf"></i>
+            <span>SOILY Admin</span>
+          </h1>
+          <button class="toggle-btn" onclick="toggleSidebar()">
+            <i class="fas fa-bars"></i>
+          </button>
+        </div>
+        <nav class="sidebar-menu">
+          <a
+            class="menu-item active"
+            data-tab="overview"
+            onclick="switchTab('overview')"
+          >
+            <i class="fas fa-chart-line"></i>
+            <span>Overview</span>
+          </a>
+          <a
+            class="menu-item"
+            data-tab="farmers"
+            onclick="switchTab('farmers')"
+          >
+            <i class="fas fa-users"></i>
+            <span>Farmers</span>
+          </a>
+          <a
+            class="menu-item"
+            data-tab="analyses"
+            onclick="switchTab('analyses')"
+          >
+            <i class="fas fa-flask"></i>
+            <span>Soil Analyses</span>
+          </a>
+          <a
+            class="menu-item"
+            data-tab="reports"
+            onclick="switchTab('reports')"
+          >
+            <i class="fas fa-file-alt"></i>
+            <span>Reports</span>
+          </a>
+          <a
+            class="menu-item"
+            data-tab="analytics"
+            onclick="switchTab('analytics')"
+          >
+            <i class="fas fa-chart-pie"></i>
+            <span>Analytics</span>
+          </a>
+          <a
+            class="menu-item"
+            data-tab="settings"
+            onclick="switchTab('settings')"
+          >
+            <i class="fas fa-cog"></i>
+            <span>Settings</span>
+          </a>
+        </nav>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content">
+        <!-- Top Bar -->
+        <div class="top-bar">
+          <div class="search-box">
+            <input
+              type="text"
+              placeholder="Search farmers, analyses, reports..."
+              id="searchInput"
+            />
+            <i class="fas fa-search"></i>
+          </div>
+          <div class="user-info">
+            <div class="user-avatar">
+              <i class="fas fa-user-shield"></i>
+            </div>
+            <button class="logout-btn" onclick="handleLogout()">
+              <i class="fas fa-sign-out-alt"></i>
+              <span>Logout</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview" class="tab-content active">
+          <div class="stats-grid">
+            <div class="stat-card" style="animation-delay: 0.1s">
+              <div class="stat-icon primary">
+                <i class="fas fa-users"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="totalFarmers">Loading...</h3>
+                <p>Total Farmers</p>
+              </div>
+            </div>
+            <div class="stat-card" style="animation-delay: 0.2s">
+              <div class="stat-icon secondary">
+                <i class="fas fa-flask"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="totalAnalyses">Loading...</h3>
+                <p>Total Analyses</p>
+              </div>
+            </div>
+            <div class="stat-card" style="animation-delay: 0.3s">
+              <div class="stat-icon warning">
+                <i class="fas fa-map"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="totalArea">Loading...</h3>
+                <p>Total Area (acres)</p>
+              </div>
+            </div>
+            <div class="stat-card" style="animation-delay: 0.4s">
+              <div class="stat-icon success">
+                <i class="fas fa-user-check"></i>
+              </div>
+              <div class="stat-info">
+                <h3 id="activeFarmers">Loading...</h3>
+                <p>Active Farmers</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h3><i class="fas fa-chart-bar"></i> Farm Size Distribution</h3>
+              <div class="chart-container">
+                <canvas id="farmSizeChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-chart-pie"></i> Soil Type Distribution</h3>
+              <div class="chart-container">
+                <canvas id="soilTypeChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-chart-line"></i> Registrations Over Time</h3>
+              <div class="chart-container">
+                <canvas id="registrationChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-seedling"></i> Top Recommended Crops</h3>
+              <div class="chart-container">
+                <canvas id="cropChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Farmers Tab -->
+        <div id="farmers" class="tab-content">
+          <div class="data-table-container">
+            <div class="table-header">
+              <h3><i class="fas fa-users"></i> All Farmers</h3>
+              <div class="table-actions">
+                <button class="filter-btn" onclick="filterFarmers()">
+                  <i class="fas fa-filter"></i> Filter
+                </button>
+                <button class="export-btn" onclick="exportFarmers()">
+                  <i class="fas fa-download"></i> Export CSV
+                </button>
+              </div>
+            </div>
+            <div id="farmersTableContainer">
+              <p class="loading">Loading farmers data...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analyses Tab -->
+        <div id="analyses" class="tab-content">
+          <div class="data-table-container">
+            <div class="table-header">
+              <h3><i class="fas fa-flask"></i> Soil Analyses</h3>
+              <div class="table-actions">
+                <button class="filter-btn" onclick="filterAnalyses()">
+                  <i class="fas fa-filter"></i> Filter
+                </button>
+                <button class="export-btn" onclick="exportAnalyses()">
+                  <i class="fas fa-download"></i> Export CSV
+                </button>
+              </div>
+            </div>
+            <div id="analysesTableContainer">
+              <p class="loading">Loading analyses data...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Reports Tab -->
+        <div id="reports" class="tab-content">
+          <div class="data-table-container">
+            <div class="table-header">
+              <h3><i class="fas fa-file-alt"></i> Generated Reports</h3>
+              <div class="table-actions">
+                <button class="export-btn" onclick="generateSystemReport()">
+                  <i class="fas fa-file-pdf"></i> Generate System Report
+                </button>
+              </div>
+            </div>
+            <div id="reportsContainer">
+              <div class="stats-grid">
+                <div class="stat-card">
+                  <div class="stat-icon primary">
+                    <i class="fas fa-download"></i>
+                  </div>
+                  <div class="stat-info">
+                    <h3 id="totalDownloads">0</h3>
+                    <p>Total Downloads</p>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon secondary">
+                    <i class="fas fa-eye"></i>
+                  </div>
+                  <div class="stat-info">
+                    <h3 id="totalViews">0</h3>
+                    <p>Total Views</p>
+                  </div>
+                </div>
+                <div class="stat-card">
+                  <div class="stat-icon warning">
+                    <i class="fas fa-archive"></i>
+                  </div>
+                  <div class="stat-info">
+                    <h3 id="archivedReports">0</h3>
+                    <p>Archived Reports</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content">
+          <div class="charts-grid">
+            <div class="chart-card">
+              <h3><i class="fas fa-vial"></i> Average pH Levels by Region</h3>
+              <div class="chart-container">
+                <canvas id="phChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-chart-area"></i> NPK Distribution</h3>
+              <div class="chart-container">
+                <canvas id="npkChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3>
+                <i class="fas fa-calendar-alt"></i> Seasonal Analysis Trends
+              </h3>
+              <div class="chart-container">
+                <canvas id="seasonalChart"></canvas>
+              </div>
+            </div>
+            <div class="chart-card">
+              <h3><i class="fas fa-heart"></i> Soil Health Distribution</h3>
+              <div class="chart-container">
+                <canvas id="soilHealthChart"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Settings Tab -->
+        <div id="settings" class="tab-content">
+          <div class="data-table-container">
+            <h3><i class="fas fa-cog"></i> System Settings</h3>
+            <div style="padding: 20px 0">
+              <div class="info-row">
+                <div class="info-label">Database Status:</div>
+                <div class="info-value">
+                  <span class="badge active">Connected</span>
+                </div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">Server Status:</div>
+                <div class="info-value">
+                  <span class="badge active">Running</span>
+                </div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">Last Backup:</div>
+                <div class="info-value" id="lastBackup">-</div>
+              </div>
+              <div class="info-row">
+                <div class="info-label">Storage Used:</div>
+                <div class="info-value" id="storageUsed">-</div>
+              </div>
+            </div>
+            <button
+              class="export-btn"
+              onclick="performBackup()"
+              style="margin-top: 20px"
+            >
+              <i class="fas fa-database"></i> Backup Database
+            </button>
+          </div>
+        </div>
+      </main>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal" id="detailModal">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="modalTitle">Details</h2>
+          <button class="close-modal" onclick="closeModal()">
+            <i class="fas fa-times"></i>
+          </button>
+        </div>
+        <div class="modal-body" id="modalBody">
+          <!-- Dynamic content -->
+        </div>
+      </div>
+    </div>
+
+    <!-- Mobile Menu Button -->
+    <button
+      class="mobile-menu-btn"
+      onclick="toggleSidebar()"
+      style="display: none"
+    >
+      <i class="fas fa-bars"></i>
+    </button>
+
+    <script>
+      // Global variables
+      let farmersData = [];
+      let analysesData = [];
+      let charts = {};
+
+      // Initialize on page load
+      document.addEventListener("DOMContentLoaded", function () {
+        loadAllData();
+        setupSearch();
+      });
+      // Add this to your existing JavaScript
+
+      // Create and add overlay element
+      const overlay = document.createElement("div");
+      overlay.className = "sidebar-overlay";
+      overlay.onclick = toggleSidebar;
+      document.body.appendChild(overlay);
+
+      // Update toggleSidebar function
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        const overlay = document.querySelector(".sidebar-overlay");
+
+        if (window.innerWidth <= 768) {
+          sidebar.classList.toggle("open");
+          overlay.classList.toggle("active");
+        } else {
+          sidebar.classList.toggle("collapsed");
+        }
+      }
+      // Load all data from backend
+      async function loadAllData() {
+        try {
+          // Fetch farmers data
+          const farmersResponse = await fetch("/api/admin/farmers");
+          const farmersResult = await farmersResponse.json();
+          farmersData = farmersResult.farmers || [];
+
+          // Fetch analyses data
+          const analysesResponse = await fetch("/api/admin/analyses");
+          const analysesResult = await analysesResponse.json();
+          analysesData = analysesResult.analyses || [];
+
+          // Fetch statistics
+          const statsResponse = await fetch("/api/admin/statistics");
+          const statsResult = await statsResponse.json();
+
+          // Update UI
+          updateOverviewStats(statsResult.stats);
+          renderFarmersTable();
+          renderAnalysesTable();
+          initializeCharts(statsResult.stats);
+          updateReportsStats(statsResult.stats);
+        } catch (error) {
+          console.error("Error loading data:", error);
+          alert("Failed to load data. Please refresh the page.");
+        }
+      }
+
+      // Update overview statistics
+      // Update overview statistics
+      function updateOverviewStats(stats) {
+        document.getElementById("totalFarmers").textContent =
+          stats.totalFarmers || 0;
+        document.getElementById("totalAnalyses").textContent =
+          stats.totalAnalyses || 0;
+
+        // Fix for totalArea - ensure it's a number before using toFixed
+        const totalArea = parseFloat(stats.totalArea) || 0;
+        document.getElementById("totalArea").textContent = totalArea.toFixed(2);
+
+        document.getElementById("activeFarmers").textContent =
+          stats.activeFarmers || 0;
+      }
+
+      // Render farmers table
+      function renderFarmersTable() {
+        const container = document.getElementById("farmersTableContainer");
+
+        if (farmersData.length === 0) {
+          container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-users"></i>
+                        <h3>No farmers found</h3>
+                        <p>No farmer registrations yet.</p>
+                    </div>
+                `;
+          return;
+        }
+
+        const tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Full Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Location</th>
+                            <th>Farm Size</th>
+                            <th>Status</th>
+                            <th>Joined</th>
+                            <th>Last Login</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${farmersData
+                          .map(
+                            (farmer) => `
+                            <tr>
+                                <td><strong>${farmer.fullName}</strong></td>
+                                <td>${farmer.email}</td>
+                                <td>${farmer.phone}</td>
+                                <td><i class="fas fa-map-marker-alt"></i> ${
+                                  farmer.location
+                                }</td>
+                                <td><span class="badge ${
+                                  farmer.farmSize
+                                }">${getFarmSizeLabel(
+                              farmer.farmSize
+                            )}</span></td>
+                                <td><span class="badge ${
+                                  farmer.isActive ? "active" : "inactive"
+                                }">${
+                              farmer.isActive ? "Active" : "Inactive"
+                            }</span></td>
+                                <td>${formatDate(farmer.createdAt)}</td>
+                                <td>${formatDate(farmer.lastLogin)}</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="action-btn view" onclick="viewFarmer('${
+                                          farmer._id
+                                        }')" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn edit" onclick="editFarmer('${
+                                          farmer._id
+                                        }')" title="Edit">
+                                            <i class="fas fa-edit"></i>
+                                        </button>
+                                        <button class="action-btn delete" onclick="deleteFarmer('${
+                                          farmer._id
+                                        }', '${
+                              farmer.fullName
+                            }')" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `
+                          )
+                          .join("")}
+                    </tbody>
+                </table>
+            `;
+
+        container.innerHTML = tableHTML;
+      }
+
+      // Render analyses table
+      function renderAnalysesTable() {
+        const container = document.getElementById("analysesTableContainer");
+
+        if (analysesData.length === 0) {
+          container.innerHTML = `
+                    <div class="empty-state">
+                        <i class="fas fa-flask"></i>
+                        <h3>No analyses found</h3>
+                        <p>No soil analyses have been performed yet.</p>
+                    </div>
+                `;
+          return;
+        }
+
+        const tableHTML = `
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Farmer</th>
+                            <th>Analysis Date</th>
+                            <th>Area (acres)</th>
+                            <th>Soil Type</th>
+                            <th>pH Level</th>
+                            <th>Soil Health</th>
+                            <th>Primary Crop</th>
+                            <th>Season</th>
+                            <th>Downloads</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${analysesData
+                          .map(
+                            (analysis) => `
+                            <tr>
+                                <td><strong>${
+                                  analysis.farmerName || "Unknown"
+                                }</strong></td>
+                                <td>${formatDate(analysis.analysisDate)}</td>
+                                <td>${analysis.boundary.area.toFixed(2)}</td>
+                                <td>${analysis.soilProperties.soilType}</td>
+                                <td><strong>${analysis.soilProperties.pH.toFixed(
+                                  2
+                                )}</strong></td>
+                                <td><span class="badge ${getSoilHealthClass(
+                                  analysis.soilHealth
+                                )}">${analysis.soilHealth}</span></td>
+                                <td><i class="fas fa-seedling"></i> ${
+                                  analysis.cropRecommendation.primaryCrop.name
+                                }</td>
+                                <td>${analysis.season}</td>
+                                <td><i class="fas fa-download"></i> ${
+                                  analysis.downloadCount || 0
+                                }</td>
+                                <td>
+                                    <div class="action-btns">
+                                        <button class="action-btn view" onclick="viewAnalysis('${
+                                          analysis._id
+                                        }')" title="View Details">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="action-btn delete" onclick="deleteAnalysis('${
+                                          analysis._id
+                                        }')" title="Delete">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+                        `
+                          )
+                          .join("")}
+                    </tbody>
+                </table>
+            `;
+
+        container.innerHTML = tableHTML;
+      }
+
+      // Initialize all charts
+      function initializeCharts(stats) {
+        // Farm Size Distribution Chart
+        if (stats.farmSizeDistribution) {
+          const ctx1 = document
+            .getElementById("farmSizeChart")
+            .getContext("2d");
+          charts.farmSize = new Chart(ctx1, {
+            type: "bar",
+            data: {
+              labels: stats.farmSizeDistribution.map((item) =>
+                getFarmSizeLabel(item._id)
+              ),
+              datasets: [
+                {
+                  label: "Number of Farms",
+                  data: stats.farmSizeDistribution.map((item) => item.count),
+                  backgroundColor: [
+                    "rgba(59, 130, 246, 0.8)",
+                    "rgba(245, 158, 11, 0.8)",
+                    "rgba(139, 92, 246, 0.8)",
+                    "rgba(236, 72, 153, 0.8)",
+                  ],
+                  borderColor: [
+                    "rgb(59, 130, 246)",
+                    "rgb(245, 158, 11)",
+                    "rgb(139, 92, 246)",
+                    "rgb(236, 72, 153)",
+                  ],
+                  borderWidth: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+              },
+              scales: {
+                y: { beginAtZero: true },
+              },
+            },
+          });
+        }
+
+        // Soil Type Distribution Chart
+        if (stats.soilTypeDistribution) {
+          const ctx2 = document
+            .getElementById("soilTypeChart")
+            .getContext("2d");
+          charts.soilType = new Chart(ctx2, {
+            type: "pie",
+            data: {
+              labels: stats.soilTypeDistribution.map((item) => item._id),
+              datasets: [
+                {
+                  data: stats.soilTypeDistribution.map((item) => item.count),
+                  backgroundColor: [
+                    "#10b981",
+                    "#3b82f6",
+                    "#f59e0b",
+                    "#ef4444",
+                    "#8b5cf6",
+                    "#ec4899",
+                    "#06b6d4",
+                    "#84cc16",
+                  ],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+            },
+          });
+        }
+
+        // Registration Over Time Chart
+        if (stats.registrationTrend) {
+          const ctx3 = document
+            .getElementById("registrationChart")
+            .getContext("2d");
+          charts.registration = new Chart(ctx3, {
+            type: "line",
+            data: {
+              labels: stats.registrationTrend.map((item) => item.month),
+              datasets: [
+                {
+                  label: "New Registrations",
+                  data: stats.registrationTrend.map((item) => item.count),
+                  borderColor: "#10b981",
+                  backgroundColor: "rgba(16, 185, 129, 0.1)",
+                  tension: 0.4,
+                  fill: true,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: { beginAtZero: true },
+              },
+            },
+          });
+        }
+
+        // Top Crops Chart
+        if (stats.topCrops) {
+          const ctx4 = document.getElementById("cropChart").getContext("2d");
+          charts.crops = new Chart(ctx4, {
+            type: "doughnut",
+            data: {
+              labels: stats.topCrops.map((item) => item.crop),
+              datasets: [
+                {
+                  data: stats.topCrops.map((item) => item.count),
+                  backgroundColor: [
+                    "#10b981",
+                    "#3b82f6",
+                    "#f59e0b",
+                    "#ef4444",
+                    "#8b5cf6",
+                    "#ec4899",
+                    "#06b6d4",
+                    "#84cc16",
+                  ],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+            },
+          });
+        }
+
+        // pH Levels Chart
+        if (stats.phByRegion) {
+          const ctx5 = document.getElementById("phChart").getContext("2d");
+          charts.ph = new Chart(ctx5, {
+            type: "bar",
+            data: {
+              labels: stats.phByRegion.map((item) => item.location),
+              datasets: [
+                {
+                  label: "Average pH",
+                  data: stats.phByRegion.map((item) => item.avgPh),
+                  backgroundColor: "rgba(16, 185, 129, 0.8)",
+                  borderColor: "rgb(16, 185, 129)",
+                  borderWidth: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                y: {
+                  beginAtZero: true,
+                  max: 14,
+                },
+              },
+            },
+          });
+        }
+
+        // NPK Distribution Chart
+        if (stats.npkAverages) {
+          const ctx6 = document.getElementById("npkChart").getContext("2d");
+          charts.npk = new Chart(ctx6, {
+            type: "radar",
+            data: {
+              labels: ["Nitrogen", "Phosphorus", "Potassium", "Organic Carbon"],
+              datasets: [
+                {
+                  label: "Average Levels",
+                  data: [
+                    stats.npkAverages.nitrogen,
+                    stats.npkAverages.phosphorus,
+                    stats.npkAverages.potassium,
+                    stats.npkAverages.organicCarbon,
+                  ],
+                  backgroundColor: "rgba(16, 185, 129, 0.2)",
+                  borderColor: "rgb(16, 185, 129)",
+                  pointBackgroundColor: "rgb(16, 185, 129)",
+                  pointBorderColor: "#fff",
+                  pointHoverBackgroundColor: "#fff",
+                  pointHoverBorderColor: "rgb(16, 185, 129)",
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              scales: {
+                r: {
+                  beginAtZero: true,
+                },
+              },
+            },
+          });
+        }
+
+        // Seasonal Trends Chart
+        if (stats.seasonalData) {
+          const ctx7 = document
+            .getElementById("seasonalChart")
+            .getContext("2d");
+          charts.seasonal = new Chart(ctx7, {
+            type: "bar",
+            data: {
+              labels: stats.seasonalData.map((item) => item.season),
+              datasets: [
+                {
+                  label: "Number of Analyses",
+                  data: stats.seasonalData.map((item) => item.count),
+                  backgroundColor: [
+                    "rgba(59, 130, 246, 0.8)",
+                    "rgba(245, 158, 11, 0.8)",
+                    "rgba(16, 185, 129, 0.8)",
+                    "rgba(139, 92, 246, 0.8)",
+                  ],
+                  borderColor: [
+                    "rgb(59, 130, 246)",
+                    "rgb(245, 158, 11)",
+                    "rgb(16, 185, 129)",
+                    "rgb(139, 92, 246)",
+                  ],
+                  borderWidth: 2,
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+              plugins: {
+                legend: { display: false },
+              },
+              scales: {
+                y: { beginAtZero: true },
+              },
+            },
+          });
+        }
+
+        // Soil Health Distribution Chart
+        if (stats.soilHealthDistribution) {
+          const ctx8 = document
+            .getElementById("soilHealthChart")
+            .getContext("2d");
+          charts.soilHealth = new Chart(ctx8, {
+            type: "doughnut",
+            data: {
+              labels: stats.soilHealthDistribution.map((item) => item._id),
+              datasets: [
+                {
+                  data: stats.soilHealthDistribution.map((item) => item.count),
+                  backgroundColor: [
+                    "#22c55e", // Excellent - Green
+                    "#10b981", // Good - Teal
+                    "#f59e0b", // Fair - Orange
+                    "#ef4444", // Poor - Red
+                    "#991b1b", // Critical - Dark Red
+                  ],
+                },
+              ],
+            },
+            options: {
+              responsive: true,
+              maintainAspectRatio: false,
+            },
+          });
+        }
+      }
+
+      // Update reports statistics
+      function updateReportsStats(stats) {
+        document.getElementById("totalDownloads").textContent =
+          stats.totalDownloads || 0;
+        document.getElementById("totalViews").textContent =
+          stats.totalViews || 0;
+        document.getElementById("archivedReports").textContent =
+          stats.archivedReports || 0;
+      }
+
+      // View farmer details
+      async function viewFarmer(farmerId) {
+        try {
+          const response = await fetch(`/api/admin/farmer/${farmerId}`);
+          const result = await response.json();
+          const farmer = result.farmer;
+
+          const modalBody = document.getElementById("modalBody");
+          modalBody.innerHTML = `
+                    <div class="info-row">
+                        <div class="info-label">Full Name:</div>
+                        <div class="info-value"><strong>${
+                          farmer.fullName
+                        }</strong></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Email:</div>
+                        <div class="info-value">${farmer.email}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Phone:</div>
+                        <div class="info-value">${farmer.phone}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Location:</div>
+                        <div class="info-value">${farmer.location}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Farm Size:</div>
+                        <div class="info-value"><span class="badge ${
+                          farmer.farmSize
+                        }">${getFarmSizeLabel(farmer.farmSize)}</span></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Status:</div>
+                        <div class="info-value"><span class="badge ${
+                          farmer.isActive ? "active" : "inactive"
+                        }">${
+            farmer.isActive ? "Active" : "Inactive"
+          }</span></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Language:</div>
+                        <div class="info-value">${getLanguageName(
+                          farmer.preferredLanguage
+                        )}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Joined:</div>
+                        <div class="info-value">${formatDate(
+                          farmer.createdAt
+                        )}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Last Login:</div>
+                        <div class="info-value">${formatDate(
+                          farmer.lastLogin
+                        )}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Total Analyses:</div>
+                        <div class="info-value"><strong>${
+                          result.analysisCount || 0
+                        }</strong></div>
+                    </div>
+                    ${
+                      farmer.notes
+                        ? `
+                    <div class="info-row">
+                        <div class="info-label">Notes:</div>
+                        <div class="info-value">${farmer.notes}</div>
+                    </div>
+                    `
+                        : ""
+                    }
+                `;
+
+          document.getElementById("modalTitle").textContent = "Farmer Details";
+          document.getElementById("detailModal").classList.add("active");
+        } catch (error) {
+          console.error("Error fetching farmer details:", error);
+          alert("Failed to load farmer details");
+        }
+      }
+
+      // View analysis details
+      async function viewAnalysis(analysisId) {
+        try {
+          const response = await fetch(`/api/admin/analysis/${analysisId}`);
+          const result = await response.json();
+          const analysis = result.analysis;
+
+          const modalBody = document.getElementById("modalBody");
+          modalBody.innerHTML = `
+                    <div class="info-row">
+                        <div class="info-label">Farmer:</div>
+                        <div class="info-value"><strong>${
+                          analysis.farmerName
+                        }</strong></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Analysis Date:</div>
+                        <div class="info-value">${formatDate(
+                          analysis.analysisDate
+                        )}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Area:</div>
+                        <div class="info-value">${analysis.boundary.area.toFixed(
+                          2
+                        )} acres</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Soil Type:</div>
+                        <div class="info-value">${
+                          analysis.soilProperties.soilType
+                        }</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">pH Level:</div>
+                        <div class="info-value"><strong>${analysis.soilProperties.pH.toFixed(
+                          2
+                        )}</strong></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Nitrogen:</div>
+                        <div class="info-value">${analysis.soilProperties.nitrogen.toFixed(
+                          2
+                        )} kg/ha</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Phosphorus:</div>
+                        <div class="info-value">${analysis.soilProperties.phosphorus.toFixed(
+                          2
+                        )} kg/ha</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Potassium:</div>
+                        <div class="info-value">${analysis.soilProperties.potassium.toFixed(
+                          2
+                        )} kg/ha</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Organic Carbon:</div>
+                        <div class="info-value">${analysis.soilProperties.organicCarbon.toFixed(
+                          2
+                        )} g/kg</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Soil Health:</div>
+                        <div class="info-value"><span class="badge ${getSoilHealthClass(
+                          analysis.soilHealth
+                        )}">${analysis.soilHealth}</span></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Fertility Rating:</div>
+                        <div class="info-value"><strong>${analysis.fertilityRating.toFixed(
+                          1
+                        )}/10</strong></div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Primary Crop:</div>
+                        <div class="info-value">${
+                          analysis.cropRecommendation.primaryCrop.name
+                        } (${analysis.cropRecommendation.primaryCrop.matchScore.toFixed(
+            0
+          )}% match)</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Season:</div>
+                        <div class="info-value">${analysis.season}</div>
+                    </div>
+                    <div class="info-row">
+                        <div class="info-label">Downloads:</div>
+                        <div class="info-value">${
+                          analysis.downloadCount || 0
+                        }</div>
+                    </div>
+                    ${
+                      analysis.notes
+                        ? `
+                    <div class="info-row">
+                        <div class="info-label">Notes:</div>
+                        <div class="info-value">${analysis.notes}</div>
+                    </div>
+                    `
+                        : ""
+                    }
+                `;
+
+          document.getElementById("modalTitle").textContent =
+            "Analysis Details";
+          document.getElementById("detailModal").classList.add("active");
+        } catch (error) {
+          console.error("Error fetching analysis details:", error);
+          alert("Failed to load analysis details");
+        }
+      }
+
+      // Edit farmer
+      function editFarmer(farmerId) {
+        // Redirect to edit page or open edit modal
+        alert(
+          "Edit functionality: Implement edit form for farmer ID: " + farmerId
+        );
+      }
+
+      // Delete farmer
+      async function deleteFarmer(farmerId, farmerName) {
+        if (
+          !confirm(
+            `Are you sure you want to delete ${farmerName}? This will also delete all their soil analyses.`
+          )
+        ) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/admin/farmer/${farmerId}`, {
+            method: "DELETE",
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            alert("Farmer deleted successfully");
+            loadAllData();
+          } else {
+            alert("Failed to delete farmer: " + result.message);
+          }
+        } catch (error) {
+          console.error("Error deleting farmer:", error);
+          alert("Failed to delete farmer");
+        }
+      }
+
+      // Delete analysis
+      async function deleteAnalysis(analysisId) {
+        if (!confirm("Are you sure you want to delete this analysis?")) {
+          return;
+        }
+
+        try {
+          const response = await fetch(`/api/admin/analysis/${analysisId}`, {
+            method: "DELETE",
+          });
+          const result = await response.json();
+
+          if (result.success) {
+            alert("Analysis deleted successfully");
+            loadAllData();
+          } else {
+            alert("Failed to delete analysis: " + result.message);
+          }
+        } catch (error) {
+          console.error("Error deleting analysis:", error);
+          alert("Failed to delete analysis");
+        }
+      }
+
+      // Export farmers to CSV
+      function exportFarmers() {
+        const csvContent = convertToCSV(farmersData, [
+          "fullName",
+          "email",
+          "phone",
+          "location",
+          "farmSize",
+          "isActive",
+          "createdAt",
+          "lastLogin",
+        ]);
+        downloadCSV(csvContent, "farmers-export.csv");
+      }
+
+      // Export analyses to CSV
+      function exportAnalyses() {
+        const csvContent = convertToCSV(
+          analysesData.map((a) => ({
+            farmerName: a.farmerName,
+            analysisDate: a.analysisDate,
+            area: a.boundary.area,
+            soilType: a.soilProperties.soilType,
+            pH: a.soilProperties.pH,
+            nitrogen: a.soilProperties.nitrogen,
+            phosphorus: a.soilProperties.phosphorus,
+            potassium: a.soilProperties.potassium,
+            soilHealth: a.soilHealth,
+            primaryCrop: a.cropRecommendation.primaryCrop.name,
+            season: a.season,
+          })),
+          Object.keys(analysesData[0] || {})
+        );
+        downloadCSV(csvContent, "analyses-export.csv");
+      }
+
+      // Convert data to CSV
+      function convertToCSV(data, headers) {
+        const csvRows = [];
+        csvRows.push(headers.join(","));
+
+        for (const row of data) {
+          const values = headers.map((header) => {
+            const value = row[header];
+            return typeof value === "string" ? `"${value}"` : value;
+          });
+          csvRows.push(values.join(","));
+        }
+
+        return csvRows.join("\n");
+      }
+
+      // Download CSV file
+      function downloadCSV(content, filename) {
+        const blob = new Blob([content], { type: "text/csv" });
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = filename;
+        a.click();
+        window.URL.revokeObjectURL(url);
+      }
+
+      // Generate system report
+      async function generateSystemReport() {
+        try {
+          window.location.href = "/api/admin/generate-report";
+        } catch (error) {
+          console.error("Error generating report:", error);
+          alert("Failed to generate report");
+        }
+      }
+
+      // Filter functions
+      function filterFarmers() {
+        const filter = prompt("Enter filter (active/inactive/all):");
+        if (filter) {
+          // Implement filtering logic
+          alert("Filter applied: " + filter);
+        }
+      }
+
+      function filterAnalyses() {
+        const filter = prompt("Enter season filter (Kharif/Rabi/Zaid/all):");
+        if (filter) {
+          // Implement filtering logic
+          alert("Filter applied: " + filter);
+        }
+      }
+
+      // Backup database
+      function performBackup() {
+        if (confirm("Are you sure you want to backup the database?")) {
+          alert("Backup initiated. You will be notified when complete.");
+          // Implement backup logic
+        }
+      }
+
+      // Close modal
+      function closeModal() {
+        document.getElementById("detailModal").classList.remove("active");
+      }
+
+      // Switch tabs
+      function switchTab(tabName) {
+        // Remove active class from all tabs and menu items
+        document.querySelectorAll(".tab-content").forEach((tab) => {
+          tab.classList.remove("active");
+        });
+        document.querySelectorAll(".menu-item").forEach((item) => {
+          item.classList.remove("active");
+        });
+
+        // Add active class to selected tab and menu item
+        document.getElementById(tabName).classList.add("active");
+        document
+          .querySelector(`[data-tab="${tabName}"]`)
+          .classList.add("active");
+      }
+
+      // Toggle sidebar
+      function toggleSidebar() {
+        const sidebar = document.getElementById("sidebar");
+        sidebar.classList.toggle("collapsed");
+
+        if (window.innerWidth <= 768) {
+          sidebar.classList.toggle("open");
+        }
+      }
+
+      // Setup search functionality
+      function setupSearch() {
+        const searchInput = document.getElementById("searchInput");
+        searchInput.addEventListener("input", (e) => {
+          const searchTerm = e.target.value.toLowerCase();
+          // Implement search logic based on active tab
+          console.log("Searching for:", searchTerm);
+        });
+      }
+
+      // Logout
+      function handleLogout() {
+        if (confirm("Are you sure you want to logout?")) {
+          window.location.href = "/admin/logout";
+        }
+      }
+
+      // Utility functions
+      function formatDate(dateString) {
+        if (!dateString) return "-";
+        const date = new Date(dateString);
+        return date.toLocaleDateString("en-IN", {
+          year: "numeric",
+          month: "short",
+          day: "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
+        });
+      }
+
+      function getFarmSizeLabel(size) {
+        const labels = {
+          small: "Small (<2 acres)",
+          medium: "Medium (2-10 acres)",
+          large: "Large (10-50 acres)",
+          xlarge: "X-Large (>50 acres)",
+        };
+        return labels[size] || size;
+      }
+
+      function getLanguageName(code) {
+        const languages = {
+          en: "English",
+          hi: "Hindi",
+          mr: "Marathi",
+          gu: "Gujarati",
+          pa: "Punjabi",
+          ta: "Tamil",
+          te: "Telugu",
+          bn: "Bengali",
+          kn: "Kannada",
+          ml: "Malayalam",
+          or: "Odia",
+          as: "Assamese",
+          ur: "Urdu",
+        };
+        return languages[code] || code;
+      }
+
+      function getSoilHealthClass(health) {
+        const classes = {
+          Excellent: "active",
+          Good: "active",
+          Fair: "medium",
+          Poor: "warning",
+          Critical: "inactive",
+        };
+        return classes[health] || "";
+      }
+
+      // Close modal when clicking outside
+      window.addEventListener("click", function (event) {
+        const modal = document.getElementById("detailModal");
+        if (event.target === modal) {
+          closeModal();
+        }
+      });
+
+      // Handle window resize
+      window.addEventListener("resize", function () {
+        const sidebar = document.getElementById("sidebar");
+        if (window.innerWidth > 768) {
+          sidebar.classList.remove("open");
+        }
+      });
+    </script>
+  </body>
+</html>
